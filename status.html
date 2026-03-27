@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monofloor — Status Operacional 27/03/2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F3EE;--surface:#FDFCF9;--surface2:#EDEBE4;
+  --border:#DDD9CF;--text:#1A1916;--text2:#6B6860;--text3:#9D9A93;
+  --green:#2A5C45;--green-l:#E8F2ED;--green-b:#B5D4C5;
+  --amber:#C4832A;--amber-l:#FDF3E5;--amber-b:#E8C88A;
+  --red:#A83232;--red-l:#FAEAEA;--red-b:#E8B4B4;
+  --blue:#2A4A8C;--blue-l:#EBF0FA;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:28px 40px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.logo-wrap{display:flex;align-items:center;gap:14px}
+.logo{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;color:var(--green);text-transform:uppercase;background:var(--green-l);border:1px solid var(--green-b);padding:5px 12px;border-radius:4px}
+.header-title{font-size:22px;font-weight:500;color:var(--text)}
+.header-sub{font-size:13px;color:var(--text2);margin-top:3px}
+.date-badge{font-family:var(--mono);font-size:11px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text2);white-space:nowrap;margin-top:4px}
+
+/* LAYOUT */
+.container{max-width:1060px;margin:0 auto;padding:36px 40px}
+.section{margin-bottom:44px}
+.section-title{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* SUMMARY CARDS */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:32px}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+.sum-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.sum-value{font-family:var(--mono);font-size:22px;font-weight:500}
+.sum-value.g{color:var(--green)}.sum-value.a{color:var(--amber)}.sum-value.r{color:var(--red)}.sum-value.d{color:var(--text3)}
+.sum-sub{font-size:12px;color:var(--text2);margin-top:4px}
+
+/* LAYERS */
+.layers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px}
+.layer-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 22px}
+.layer-num{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.layer-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.layer-source{font-size:12px;color:var(--text2);margin-bottom:12px}
+.layer-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px}
+.ls-done{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.ls-pend{background:var(--red-l);color:var(--red);border:1px solid var(--red-b)}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--surface2)}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#F9F8F5}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.tag-g{background:var(--green-l);color:var(--green)}.tag-a{background:var(--amber-l);color:var(--amber)}.tag-r{background:var(--red-l);color:var(--red)}.tag-b{background:var(--blue-l);color:var(--blue)}.tag-d{background:var(--surface2);color:var(--text3)}
+
+/* ALERT BLOCKS */
+.alert{padding:14px 18px;border-radius:8px;font-size:13px;margin-bottom:12px;border-left:3px solid}
+.alert-r{background:var(--red-l);border-color:var(--red);color:var(--red)}
+.alert-a{background:var(--amber-l);border-color:var(--amber);color:var(--amber)}
+.alert-g{background:var(--green-l);border-color:var(--green);color:var(--green)}
+.alert strong{font-weight:600}
+
+/* PRIORITIES */
+.priority-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.priority-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+.priority-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.priority-item{font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start}
+.priority-item:last-child{border-bottom:none}
+.priority-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.dot-r{background:var(--red)}.dot-a{background:var(--amber)}.dot-g{background:var(--green)}
+
+/* MONO VALUE */
+.mono{font-family:var(--mono);font-size:12px}
+.mono.g{color:var(--green)}.mono.a{color:var(--amber)}.mono.r{color:var(--red)}.mono.d{color:var(--text3)}
+
+/* LINKS */
+.links-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.link-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:6px;background:var(--surface);font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text);text-decoration:none;transition:all .15s}
+.link-btn:hover{border-color:var(--green);color:var(--green)}
+.link-btn.primary{background:var(--green);color:#fff;border-color:var(--green)}
+.link-btn.primary:hover{background:#235038}
+
+/* FOOTER */
+.footer{background:var(--surface);border-top:1px solid var(--border);padding:24px 40px;font-size:12px;color:var(--text3);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+
+@media(max-width:720px){
+  .header{padding:20px 20px}.container{padding:24px 20px}
+  .layers{grid-template-columns:1fr}.priority-grid{grid-template-columns:1fr}
+  .summary-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-wrap">
+    <span class="logo">Monofloor</span>
+    <div>
+      <div class="header-title">Status Operacional &amp; Financeiro</div>
+      <div class="header-sub">Relatório interno — Centro de Projetos + Régua de Saúde</div>
+    </div>
+  </div>
+  <div class="date-badge">27 de março de 2026</div>
+</div>
+
+<div class="container">
+
+  <!-- LINKS -->
+  <div class="section">
+    <div class="section-title">Plataformas publicadas</div>
+    <div class="links-row">
+      <a class="link-btn primary" href="https://vitormonofloor.github.io/cargo-assistente/projetos.html" target="_blank">→ Centro de Projetos</a>
+      <a class="link-btn" href="https://vitormonofloor.github.io/cargo-assistente/dashboard.html" target="_blank">→ Régua de Saúde Operacional</a>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="section">
+    <div class="section-title">Visão geral — Janeiro 2026</div>
+    <div class="summary-grid">
+      <div class="sum-card">
+        <div class="sum-label">Total pago (3 CNPJs)</div>
+        <div class="sum-value">R$ 1,36M</div>
+        <div class="sum-sub">Matriz · Filial · Mineral</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Custo operacional real</div>
+        <div class="sum-value g">R$ 1,19M</div>
+        <div class="sum-sub">Após excluir devoluções</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Devoluções a clientes</div>
+        <div class="sum-value r">R$ 170k</div>
+        <div class="sum-sub">3 cancelamentos/rescisões</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Projetos com custo</div>
+        <div class="sum-value">156</div>
+        <div class="sum-sub">em janeiro/26</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Ticket médio 2026</div>
+        <div class="sum-value g">R$ 151k</div>
+        <div class="sum-sub">+87% vs 2025 (R$81k)</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Margem por projeto</div>
+        <div class="sum-value d">— aguarda</div>
+        <div class="sum-sub">Pendente D4Sign</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAYERS -->
+  <div class="section">
+    <div class="section-title">Centro de Projetos — 3 camadas de dados</div>
+    <div class="layers">
+      <div class="layer-card">
+        <div class="layer-num" style="color:var(--green)">Camada 1</div>
+        <div class="layer-title">Custos por projeto</div>
+        <div class="layer-source">Planilhas Omie — Jan/2026<br>3 CNPJs · 1.252 lançamentos</div>
+        <span class="layer-status ls-done">✓ Completo</span>
+      </div>
+      <div class="layer-card">
+        <div class="layer-num" style="color:var(--amber)">Camada 2</div>
+        <div class="layer-title">Dados de obra</div>
+        <div class="layer-source">Pipefy GraphQL<br>591 cards · m² · fases · datas</div>
+        <span class="layer-status ls-done">✓ Completo</span>
+      </div>
+      <div class="layer-card">
+        <div class="layer-num" style="color:var(--red)">Camada 3</div>
+        <div class="layer-title">Receita por projeto</div>
+        <div class="layer-source">D4Sign — contratos assinados<br>100 documentos mapeados</div>
+        <span class="layer-status ls-pend">⏳ Pendente</span>
+      </div>
+    </div>
+    <div class="alert alert-a"><strong>Próximo passo:</strong> extrair o valor de cada contrato do D4Sign para calcular margem bruta real por projeto. Os 100 contratos já foram mapeados — falta entrar em cada PDF e capturar o valor.</div>
+  </div>
+
+  <!-- TOP PROJETOS -->
+  <div class="section">
+    <div class="section-title">Top projetos por custo operacional — Jan/2026</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Projeto</th><th>CNPJ(s)</th><th>Custo op.</th><th>m² (Pipefy)</th><th>R$/m² custo</th><th>Fase</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><strong>MATA-METRO</strong></td><td><span class="tag tag-a">Filial+Matriz</span></td><td><span class="mono r">R$ 778.486</span></td><td><span class="mono d">—</span></td><td><span class="mono d">—</span></td><td><span class="tag tag-r">Fora do Pipefy</span></td></tr>
+          <tr><td>Iolanda Odebrecht</td><td><span class="tag tag-d">F+M</span></td><td><span class="mono">R$ 80.487</span></td><td><span class="mono">432,87 m²</span></td><td><span class="mono">R$ 186/m²</span></td><td><span class="tag tag-b">Log. Em Coleta</span></td></tr>
+          <tr><td>Marcos José Veiga Gomes</td><td><span class="tag tag-d">Matriz</span></td><td><span class="mono">R$ 56.492</span></td><td><span class="mono">299,90 m²</span></td><td><span class="mono">R$ 188/m²</span></td><td><span class="tag tag-b">Log. Em Coleta</span></td></tr>
+          <tr><td>Amendoeiras (SPE)</td><td><span class="tag tag-d">F+M</span></td><td><span class="mono">R$ 23.607</span></td><td><span class="mono">399,17 m²</span></td><td><span class="mono a">R$ 59/m²</span></td><td><span class="tag tag-r">Obra Pausada</span></td></tr>
+          <tr><td>Carolina Rache Guimarães</td><td><span class="tag tag-d">Filial</span></td><td><span class="mono">R$ 20.561</span></td><td><span class="mono">162,40 m²</span></td><td><span class="mono">R$ 127/m²</span></td><td><span class="tag tag-a">Confirm. OP1</span></td></tr>
+          <tr><td>Luis Gustavo Rovaron</td><td><span class="tag tag-d">Filial</span></td><td><span class="mono">R$ 18.616</span></td><td><span class="mono">38,42 m²</span></td><td><span class="mono r">R$ 485/m² ⚠</span></td><td><span class="tag tag-a">Confirm. OP1</span></td></tr>
+          <tr><td>Beny Majtlis</td><td><span class="tag tag-d">Filial</span></td><td><span class="mono">R$ 15.873</span></td><td><span class="mono">213,39 m²</span></td><td><span class="mono g">R$ 74/m²</span></td><td><span class="tag tag-g">Em Execução</span></td></tr>
+          <tr><td>Alexandre Buss van den Mosselaar</td><td><span class="tag tag-d">Filial</span></td><td><span class="mono">R$ 12.734</span></td><td><span class="mono">246,37 m²</span></td><td><span class="mono g">R$ 52/m²</span></td><td><span class="tag tag-b">Log. Em Coleta</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-r"><strong>Atenção — MATA-METRO:</strong> R$ 778k (65,6% do custo total) estão agrupados em um único item sem projeto-destino no Pipefy. São pagamentos de prestadores de aplicação que precisam ser rateados por obra. Isso distorce qualquer análise de margem por projeto.</div>
+  </div>
+
+  <!-- DEVOLUÇÕES -->
+  <div class="section">
+    <div class="section-title">Devoluções a clientes — Janeiro 2026</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Projeto</th><th>Valor devolvido</th><th>% do total</th><th>Observação</th></tr></thead>
+        <tbody>
+          <tr><td>TGSJ Empreendimentos Imobiliários</td><td><span class="mono r">R$ 119.901</span></td><td><span class="mono">72,5%</span></td><td>Cancelamento/rescisão</td></tr>
+          <tr><td>Gabriela Guarita Dirani</td><td><span class="mono r">R$ 40.077</span></td><td><span class="mono">24,2%</span></td><td>Cancelamento/rescisão</td></tr>
+          <tr><td>R3 – PR + outros</td><td><span class="mono r">R$ 10.285</span></td><td><span class="mono">3,3%</span></td><td>Cancelamentos</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13px;color:var(--text2)">As devoluções <strong>não são custo operacional</strong> — são valores devolvidos a clientes por cancelamentos. Foram excluídas da análise de custo por projeto.</p>
+  </div>
+
+  <!-- CUSTOS POR CATEGORIA -->
+  <div class="section">
+    <div class="section-title">Estrutura de custos — Top categorias consolidadas</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Categoria</th><th>Valor</th><th>% do custo operacional</th><th>Tipo</th></tr></thead>
+        <tbody>
+          <tr><td>Prestadores de serviço de aplicação</td><td><span class="mono">R$ 690.218</span></td><td><span class="mono">58,2%</span></td><td><span class="tag tag-r">Variável — obra</span></td></tr>
+          <tr><td>Hotel (viagem)</td><td><span class="mono">R$ 69.170</span></td><td><span class="mono">5,8%</span></td><td><span class="tag tag-a">Variável — viagem</span></td></tr>
+          <tr><td>Km rodados obra</td><td><span class="mono">R$ 56.637</span></td><td><span class="mono">4,8%</span></td><td><span class="tag tag-a">Variável — viagem</span></td></tr>
+          <tr><td>Materiais de consumo</td><td><span class="mono">R$ 51.627</span></td><td><span class="mono">4,4%</span></td><td><span class="tag tag-r">Variável — obra</span></td></tr>
+          <tr><td>Deslocamento</td><td><span class="mono">R$ 48.383</span></td><td><span class="mono">4,1%</span></td><td><span class="tag tag-a">Variável — viagem</span></td></tr>
+          <tr><td>Comissões RT (arquitetos)</td><td><span class="mono">R$ 46.927</span></td><td><span class="mono">4,0%</span></td><td><span class="tag tag-b">Variável — comercial</span></td></tr>
+          <tr><td>Alimentação (viagem)</td><td><span class="mono">R$ 40.935</span></td><td><span class="mono">3,5%</span></td><td><span class="tag tag-a">Variável — viagem</span></td></tr>
+          <tr><td>Indenizações/manutenções clientes</td><td><span class="mono">R$ 23.980</span></td><td><span class="mono">2,0%</span></td><td><span class="tag tag-r">Qualidade</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-a"><strong>Observação:</strong> 97% dos custos são variáveis, diretamente ligados às obras. Não há custos fixos de overhead nesta planilha — folha de pagamento, aluguel e sistemas estão em outros centros de custo.</div>
+  </div>
+
+  <!-- PRIORIDADES -->
+  <div class="section">
+    <div class="section-title">Prioridades operacionais</div>
+    <div class="priority-grid">
+      <div class="priority-card">
+        <div class="priority-label" style="color:var(--red)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span>
+          Crítico — ação imediata
+        </div>
+        <div class="priority-item"><span class="priority-dot dot-r"></span><span>Extrair receita do D4Sign para calcular margem real</span></div>
+        <div class="priority-item"><span class="priority-dot dot-r"></span><span>SLA VT Aferição: 3% vs meta 90% — gargalo gravíssimo</span></div>
+        <div class="priority-item"><span class="priority-dot dot-r"></span><span>Taxa de pausa: 47,6% vs meta ≤10%</span></div>
+        <div class="priority-item"><span class="priority-dot dot-r"></span><span>267 amostras presas em Solicitar Coleta (OEC)</span></div>
+        <div class="priority-item"><span class="priority-dot dot-r"></span><span>NPS e pós-obra: processo inexistente</span></div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-label" style="color:var(--amber)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block"></span>
+          Atenção — próximos 30 dias
+        </div>
+        <div class="priority-item"><span class="priority-dot dot-a"></span><span>Definir metodologia de rateio do MATA-METRO (R$778k)</span></div>
+        <div class="priority-item"><span class="priority-dot dot-a"></span><span>Adicionar meses seguintes (Feb/Mar 2026) para tendência</span></div>
+        <div class="priority-item"><span class="priority-dot dot-a"></span><span>Acesso ao Omie (folha, overhead, DRE completo)</span></div>
+        <div class="priority-item"><span class="priority-dot dot-a"></span><span>Criar campo "Motivo de Pausa" no Pipefy</span></div>
+        <div class="priority-item"><span class="priority-dot dot-a"></span><span>Implantar CRM para rastrear conversão e ciclo de venda</span></div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-label" style="color:var(--green)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>
+          Saudável — monitorar
+        </div>
+        <div class="priority-item"><span class="priority-dot dot-g"></span><span>Throughput: 25 obras/mês ✓</span></div>
+        <div class="priority-item"><span class="priority-dot dot-g"></span><span>Ticket médio: R$151k (+87% YoY) ✓</span></div>
+        <div class="priority-item"><span class="priority-dot dot-g"></span><span>Aditivos ativos: 6 ✓</span></div>
+        <div class="priority-item"><span class="priority-dot dot-g"></span><span>Tabela de preços 2026 estruturada ✓</span></div>
+        <div class="priority-item"><span class="priority-dot dot-g"></span><span>m² médio por projeto: 211m² (meta ≥150m²) ✓</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RÉGUA DE SAÚDE -->
+  <div class="section">
+    <div class="section-title">Régua de saúde operacional — resumo por setor</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Setor</th><th>🔴 Crítico</th><th>🟡 Atenção</th><th>🟢 Saudável</th><th>⬜ Sem dados</th></tr></thead>
+        <tbody>
+          <tr><td>💰 Financeiro</td><td>0</td><td>1</td><td>2</td><td>5</td></tr>
+          <tr><td>🤝 Comercial</td><td>0</td><td>1</td><td>3</td><td>3</td></tr>
+          <tr><td>📐 Projetos</td><td>2</td><td>2</td><td>1</td><td>2</td></tr>
+          <tr><td>📄 Contratos</td><td>0</td><td>1</td><td>1</td><td>3</td></tr>
+          <tr><td>🔧 Operações</td><td>2</td><td>1</td><td>1</td><td>4</td></tr>
+          <tr><td>🏭 Produção</td><td>0</td><td>1</td><td>0</td><td>5</td></tr>
+          <tr><td>🚚 Logística</td><td>2</td><td>1</td><td>1</td><td>3</td></tr>
+          <tr><td>⭐ Pós-obra</td><td>2</td><td>0</td><td>0</td><td>4</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <span>Monofloor — Relatório interno · Uso restrito</span>
+  <span>Gerado em 27/03/2026 · Dados de Jan/2026</span>
+</div>
+
+</body>
+</html>
