@@ -1,1 +1,255 @@
-TEST - 2026-03-27T17:34:08.083Z
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monofloor — Painel Operacional</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0e10;--surface:#141518;--surface2:#1c1d21;--border:#2a2b30;--text:#e8e6e0;--muted:#6b6a65;--accent:#c8a96e;--accent2:#7cbf8e;--danger:#e06c75;--warn:#e5a84a;--info:#61afef;--gap:20px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding:24px}
+.header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.logo{font-family:'DM Serif Display',serif;font-size:2rem;letter-spacing:-.02em}.logo span{color:var(--accent);font-style:italic}
+.header-meta{text-align:right}.header-meta .date{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--muted)}
+.section-title{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.grid{display:grid;gap:var(--gap)}.grid-4{grid-template-columns:repeat(4,1fr)}.grid-3{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:repeat(2,1fr)}.grid-6-4{grid-template-columns:6fr 4fr}.grid-5-5{grid-template-columns:5fr 5fr}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.ok::before{background:var(--accent2)}.kpi.warn::before{background:var(--warn)}.kpi.danger::before{background:var(--danger)}.kpi.info::before{background:var(--info)}.kpi.gold::before{background:var(--accent)}
+.kpi-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.kpi-value{font-family:'DM Serif Display',serif;font-size:2.2rem;line-height:1}.kpi-value.mono{font-family:'IBM Plex Mono',monospace;font-size:1.6rem}
+.kpi-sub{font-size:.7rem;color:var(--muted);margin-top:6px}
+.kpi-badge{display:inline-flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:2px 8px;border-radius:20px;margin-top:8px}
+.kpi-badge.red{background:rgba(224,108,117,.15);color:var(--danger)}.kpi-badge.yellow{background:rgba(229,168,74,.15);color:var(--warn)}.kpi-badge.green{background:rgba(124,191,142,.15);color:var(--accent2)}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px}
+.phase-grid{display:flex;flex-direction:column;gap:2px}
+.phase-row{display:flex;align-items:center;padding:6px 10px;border-radius:4px;gap:10px}.phase-row:hover{background:var(--surface2)}
+.phase-name{flex:1;font-size:.72rem}.phase-count{font-family:'IBM Plex Mono',monospace;font-size:.72rem;width:36px;text-align:right}
+.phase-bar-wrap{width:80px}.phase-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.phase-fill{height:100%;background:var(--info);border-radius:2px;transition:width 1s ease}.phase-fill.danger{background:var(--danger)}.phase-fill.warn{background:var(--warn)}.phase-fill.ok{background:var(--accent2)}
+.gargalo-list{display:flex;flex-direction:column;gap:14px}
+.gargalo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.gargalo-name{font-size:.75rem}.gargalo-count{font-family:'IBM Plex Mono',monospace;font-size:.75rem}
+.gargalo-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.gargalo-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.gargalo-meta{font-size:.65rem;color:var(--muted);margin-top:4px}
+.contract-table{width:100%;border-collapse:collapse}
+.contract-table th{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.08em;color:var(--muted);text-align:left;padding:0 8px 10px;border-bottom:1px solid var(--border)}
+.contract-table td{padding:9px 8px;font-size:.72rem;border-bottom:1px solid var(--surface2)}
+.contract-table .value{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent)}
+.badge-prod{display:inline-block;font-size:.6rem;padding:2px 7px;border-radius:3px;font-family:'IBM Plex Mono',monospace}
+.badge-stelion{background:rgba(97,175,239,.15);color:var(--info)}.badge-lilit{background:rgba(200,169,110,.15);color:var(--accent)}.badge-mix{background:rgba(124,191,142,.15);color:var(--accent2)}.badge-fora{background:rgba(229,168,74,.15);color:var(--warn);font-size:.55rem}
+.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.price-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:5px}
+.price-name{font-size:.7rem}.price-val{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent)}
+.indicator-table{width:100%;border-collapse:collapse}
+.indicator-table th{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.08em;color:var(--muted);text-align:left;padding:0 8px 10px;border-bottom:1px solid var(--border)}
+.indicator-table td{padding:7px 8px;font-size:.7rem;border-bottom:1px solid var(--surface2)}
+.mb{margin-bottom:var(--gap)}.mb2{margin-bottom:calc(var(--gap)*2)}
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted)}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-6-4,.grid-5-5{grid-template-columns:1fr}.grid-3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}body{padding:16px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><div class="logo">Mono<span>floor</span></div><div style="font-size:.7rem;color:var(--muted);margin-top:4px">Painel Operacional &amp; Comercial</div></div>
+  <div class="header-meta"><div class="date" id="live-date">27/03/2026</div><div style="font-size:.7rem;color:var(--muted)">Fonte: Pipefy + D4Sign &middot; Dados reais</div></div>
+</div>
+
+<div class="section-title mb">01 &mdash; Operações em tempo real</div>
+<div class="grid grid-4 mb2">
+  <div class="kpi ok"><div class="kpi-label">Obras em execução</div><div class="kpi-value">11</div><div class="kpi-sub">cards ativos &mdash; OE fase execução</div><div class="kpi-badge green">● em campo</div></div>
+  <div class="kpi danger"><div class="kpi-label">Obras pausadas</div><div class="kpi-value">10</div><div class="kpi-sub">taxa de pausa: 47,6% das obras em campo</div><div class="kpi-badge red">▲ crítico · sem motivo registrado</div></div>
+  <div class="kpi warn"><div class="kpi-label">Ciclo médio do projeto</div><div class="kpi-value">238</div><div class="kpi-sub">dias do PIUI à entrega (7,9 meses)</div><div class="kpi-badge yellow">mín 225 · máx 294 dias</div></div>
+  <div class="kpi gold"><div class="kpi-label">Throughput — Jan/2026</div><div class="kpi-value">25</div><div class="kpi-sub">obras finalizadas no mês</div><div class="kpi-badge green">4 em março até dia 27</div></div>
+</div>
+
+<div class="grid grid-6-4 mb2">
+  <div class="panel">
+    <div class="section-title mb">02 &mdash; Funil OE · cards por fase</div>
+    <div class="phase-grid">
+      <div class="phase-row"><div class="phase-name">ENTRADA</div><div class="phase-count">11</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill ok" style="width:20%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">EM CONTRATO</div><div class="phase-count">7</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill ok" style="width:13%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">1º CONTATO OP.</div><div class="phase-count">11</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill" style="width:20%"></div></div></div></div>
+      <div class="phase-row" style="background:rgba(224,108,117,.05)"><div class="phase-name" style="color:var(--danger)">▲ AGEND. VT AFERIÇÃO</div><div class="phase-count" style="color:var(--danger)">41</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill danger" style="width:75%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">RESULTADO VT AFERIÇÃO</div><div class="phase-count">8</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill" style="width:15%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">CONFIRMAÇÕES OP 1</div><div class="phase-count">13</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill" style="width:24%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">REVISÃO FINAL OP</div><div class="phase-count">8</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill" style="width:15%"></div></div></div></div>
+      <div class="phase-row" style="background:rgba(229,168,74,.05)"><div class="phase-name" style="color:var(--warn)">⚠ AGUARDANDO LIBERAÇÃO</div><div class="phase-count" style="color:var(--warn)">22</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill warn" style="width:40%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">INDÚSTRIA EM PRODUÇÃO</div><div class="phase-count">10</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill" style="width:18%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">LOGÍSTICA EM ENTREGA</div><div class="phase-count">10</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill ok" style="width:18%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">LOGÍSTICA MAT. ENTREGUE</div><div class="phase-count">11</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill ok" style="width:20%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">OBRA EM EXECUÇÃO</div><div class="phase-count">11</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill ok" style="width:20%"></div></div></div></div>
+      <div class="phase-row" style="background:rgba(229,168,74,.05)"><div class="phase-name" style="color:var(--warn)">⚠ OBRA PAUSADA</div><div class="phase-count" style="color:var(--warn)">10</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill warn" style="width:18%"></div></div></div></div>
+      <div class="phase-row"><div class="phase-name">LOGÍSTICA EM COLETA</div><div class="phase-count">25</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill" style="width:45%"></div></div></div></div>
+      <div class="phase-row" style="opacity:.5"><div class="phase-name">CLIENTE FINALIZADO (hist.)</div><div class="phase-count">352</div><div class="phase-bar-wrap"><div class="phase-bar"><div class="phase-fill ok" style="width:100%"></div></div></div></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:var(--gap)">
+    <div class="panel">
+      <div class="section-title mb">03 &mdash; Gargalos críticos</div>
+      <div class="gargalo-list">
+        <div><div class="gargalo-header"><div class="gargalo-name" style="color:var(--danger)">G1 · SOLICITAR COLETA (OEC)</div><div class="gargalo-count" style="color:var(--danger)">267</div></div><div class="gargalo-bar"><div class="gargalo-fill" style="width:100%;background:var(--danger)"></div></div><div class="gargalo-meta">Idade média 260 dias · sem processo ativo</div></div>
+        <div><div class="gargalo-header"><div class="gargalo-name" style="color:var(--danger)">G2 · AGEND. VT AFERIÇÃO (OE)</div><div class="gargalo-count" style="color:var(--danger)">41</div></div><div class="gargalo-bar"><div class="gargalo-fill" style="width:82%;background:var(--danger)"></div></div><div class="gargalo-meta">163 dias avg · 97% acima SLA (X−60 dias)</div></div>
+        <div><div class="gargalo-header"><div class="gargalo-name" style="color:var(--warn)">G3 · AGUARDANDO LIBERAÇÃO</div><div class="gargalo-count" style="color:var(--warn)">22</div></div><div class="gargalo-bar"><div class="gargalo-fill" style="width:44%;background:var(--warn)"></div></div><div class="gargalo-meta">Depende de G1 desbloqueado</div></div>
+        <div><div class="gargalo-header"><div class="gargalo-name" style="color:var(--warn)">G4 · OBRA PAUSADA</div><div class="gargalo-count" style="color:var(--warn)">10</div></div><div class="gargalo-bar"><div class="gargalo-fill" style="width:20%;background:var(--warn)"></div></div><div class="gargalo-meta">Pausa mais antiga: 43 dias · motivo: N/R</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="section-title mb">04 &mdash; Outros pipes</div>
+      <div class="phase-grid">
+        <div class="phase-row"><div class="phase-name">OEC — Solicitar Coleta 🔴</div><div class="phase-count" style="color:var(--danger)">267</div></div>
+        <div class="phase-row"><div class="phase-name">OEC — Concluído</div><div class="phase-count" style="color:var(--accent2)">74</div></div>
+        <div class="phase-row"><div class="phase-name">OEI — Solicitação</div><div class="phase-count">5</div></div>
+        <div class="phase-row"><div class="phase-name">OEI — Em Produção SP</div><div class="phase-count">1</div></div>
+        <div class="phase-row"><div class="phase-name">OECT — Def. Consultor</div><div class="phase-count">10</div></div>
+        <div class="phase-row"><div class="phase-name">OECT — Neg. Aditivo</div><div class="phase-count" style="color:var(--accent)">5</div></div>
+        <div class="phase-row"><div class="phase-name">OECT — Assinando Adit.</div><div class="phase-count" style="color:var(--accent)">1</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-title mb">05 &mdash; Análise comercial · D4Sign (16 contratos reais)</div>
+<div class="grid grid-4 mb">
+  <div class="kpi gold"><div class="kpi-label">Ticket médio 2025</div><div class="kpi-value mono">R$80k</div><div class="kpi-sub">8 contratos · total R$ 644.630</div><div class="kpi-badge green">m² médio: 102m²</div></div>
+  <div class="kpi gold"><div class="kpi-label">Ticket médio 2026</div><div class="kpi-value mono">R$151k</div><div class="kpi-sub">8 contratos · total R$ 1.207.084</div><div class="kpi-badge yellow">m² médio: 155m²</div></div>
+  <div class="kpi info"><div class="kpi-label">Variação ticket YoY</div><div class="kpi-value">+87%</div><div class="kpi-sub">Puxado por obras fora de base</div><div class="kpi-badge yellow">50% fora de base em 2026</div></div>
+  <div class="kpi info"><div class="kpi-label">BASE vs FORA (2026)</div><div class="kpi-value mono">R$85k</div><div class="kpi-sub">vs R$217k fora de base</div><div class="kpi-badge green">+155% fora vs. base</div></div>
+</div>
+
+<div class="grid grid-5-5 mb2">
+  <div class="panel">
+    <div class="section-title mb">Contratos 2025</div>
+    <table class="contract-table">
+      <thead><tr><th>CLIENTE</th><th>PRODUTO</th><th>M²</th><th>VALOR</th></tr></thead>
+      <tbody>
+        <tr><td>Victor Peixoto</td><td><span class="badge-prod badge-stelion">Stelion</span></td><td>86m²</td><td class="value">R$44.800</td></tr>
+        <tr><td>Reynaldo Figueiredo</td><td><span class="badge-prod badge-stelion">Stelion</span></td><td>89m²</td><td class="value">R$37.237</td></tr>
+        <tr><td>Luma Tijon Soares</td><td><span class="badge-prod badge-lilit">Lilit</span></td><td>222m²</td><td class="value">R$86.000</td></tr>
+        <tr><td>Michelle Gardenal</td><td><span class="badge-prod badge-mix">Mix</span></td><td>43m²</td><td class="value">R$92.965</td></tr>
+        <tr><td>Rafik Freua</td><td><span class="badge-prod badge-mix">Mix</span></td><td>103m²</td><td class="value">R$73.576</td></tr>
+        <tr><td>Pedro Monteleone</td><td><span class="badge-prod badge-lilit">Lilit</span></td><td>84m²</td><td class="value">R$88.490</td></tr>
+        <tr><td>Ricardo Marujo</td><td><span class="badge-prod badge-lilit">Lilit</span></td><td>167m²</td><td class="value">R$208.000</td></tr>
+        <tr><td>Gustavo Lima</td><td><span class="badge-prod badge-lilit">Lilit</span></td><td>24m²</td><td class="value">R$13.562</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <div class="section-title mb">Contratos 2026 (Mar)</div>
+    <table class="contract-table">
+      <thead><tr><th>CLIENTE</th><th>PRODUTO</th><th>M²</th><th>VALOR</th></tr></thead>
+      <tbody>
+        <tr><td>UNKÊ — Alm. Casa Branca</td><td><span class="badge-prod badge-mix">Mix</span></td><td>49m²</td><td class="value">R$43.295</td></tr>
+        <tr><td>Carla Antonio <span class="badge-prod badge-fora">fora</span></td><td><span class="badge-prod badge-mix">Mix</span></td><td>208m²</td><td class="value">R$185.570</td></tr>
+        <tr><td>Adriana Adler</td><td><span class="badge-prod badge-mix">Mix</span></td><td>19m²</td><td class="value">R$49.556</td></tr>
+        <tr><td>Bruno Lopez Lima <span class="badge-prod badge-fora">fora</span></td><td><span class="badge-prod badge-lilit">Lilit</span></td><td>387m²</td><td class="value">R$346.125</td></tr>
+        <tr><td>UNKÊ — João Moura</td><td><span class="badge-prod badge-lilit">Lilit</span></td><td>106m²</td><td class="value">R$52.090</td></tr>
+        <tr><td>Leonardo Guerzoni <span class="badge-prod badge-fora">fora</span></td><td><span class="badge-prod badge-lilit">Lilit</span></td><td>—</td><td class="value">R$283.448</td></tr>
+        <tr><td>Maria Heydi Maeda</td><td><span class="badge-prod badge-mix">Mix</span></td><td>139m²</td><td class="value">R$110.000</td></tr>
+        <tr><td>Rafael Beltrão</td><td><span class="badge-prod badge-lilit">Lilit</span></td><td>179m²</td><td class="value">R$137.000</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid grid-3 mb2">
+  <div class="panel">
+    <div class="section-title mb">06 &mdash; Tabela de preços 2026</div>
+    <div class="price-grid">
+      <div class="price-row"><div class="price-name">Stelion · Piso</div><div class="price-val">R$ 637/m²</div></div>
+      <div class="price-row"><div class="price-name">Lilit · Piso</div><div class="price-val">R$ 560/m²</div></div>
+      <div class="price-row"><div class="price-name">Lilit · Parede</div><div class="price-val">R$ 448/m²</div></div>
+      <div class="price-row"><div class="price-name">Stelion · Parede</div><div class="price-val">R$ 728/m²</div></div>
+      <div class="price-row"><div class="price-name">Stelion · Bancada</div><div class="price-val">R$1.365/m²</div></div>
+      <div class="price-row"><div class="price-name">Lilit · Esp. Peq.</div><div class="price-val">R$ 295/m²</div></div>
+      <div class="price-row"><div class="price-name">Stelion · Esp. Peq.</div><div class="price-val">R$ 455/m²</div></div>
+      <div class="price-row"><div class="price-name">Lilit · Esp. Gr.</div><div class="price-val">R$ 865/m²</div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="section-title mb">07 &mdash; Receita estimada mensal</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <div style="padding:12px;background:var(--surface2);border-radius:5px"><div style="font-size:.65rem;color:var(--muted)">Conservador (ticket R$80k × 25 obras)</div><div style="font-family:'IBM Plex Mono',monospace;font-size:1.1rem;margin-top:4px">R$ 2.000.000/mês</div></div>
+      <div style="padding:12px;background:var(--surface2);border-radius:5px;border:1px solid var(--accent)"><div style="font-size:.65rem;color:var(--accent)">Atual (ticket R$151k × 25 obras)</div><div style="font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--accent);margin-top:4px">R$ 3.775.000/mês</div></div>
+      <div style="padding:12px;background:var(--surface2);border-radius:5px"><div style="font-size:.65rem;color:var(--muted)">Fora de base (ticket R$217k × 25 obras)</div><div style="font-family:'IBM Plex Mono',monospace;font-size:1.1rem;margin-top:4px">R$ 5.425.000/mês</div></div>
+    </div>
+    <div style="padding:10px;background:rgba(200,169,110,.08);border:1px solid rgba(200,169,110,.2);border-radius:5px;font-size:.67rem;color:var(--accent)">⚠ Estimativa bruta sem custos. Margem real aguarda Omie.</div>
+  </div>
+  <div class="panel">
+    <div class="section-title mb">08 &mdash; Mix de produto (16 contratos)</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <div style="padding:10px;background:var(--surface2);border-radius:5px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:.72rem">Lilit puro</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--accent)">6 contratos · R$158k avg</span></div>
+      <div style="padding:10px;background:var(--surface2);border-radius:5px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:.72rem">Mix Stelion+Lilit</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--accent2)">7 contratos · R$87k avg</span></div>
+      <div style="padding:10px;background:var(--surface2);border-radius:5px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:.72rem">Stelion puro</span><span style="font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--info)">3 contratos · R$40k avg</span></div>
+    </div>
+    <div style="font-size:.65rem;color:var(--muted);margin-bottom:8px">LOCALIZAÇÃO 2026</div>
+    <div style="padding:10px;background:var(--surface2);border-radius:5px;display:flex;justify-content:space-between"><span style="font-size:.72rem">Base (SP/RJ/CWB)</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--accent2)">4 · R$85k avg</span></div>
+    <div style="padding:10px;background:var(--surface2);border-radius:5px;display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:.72rem">Fora de base</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--warn)">4 · R$217k avg</span></div>
+  </div>
+</div>
+
+<div class="section-title mb">09 &mdash; Status dos indicadores propostos (57 total)</div>
+<div class="grid grid-2 mb2">
+  <div class="panel">
+    <div style="font-size:.7rem;color:var(--accent2);margin-bottom:12px">✅ Com dado disponível hoje</div>
+    <table class="indicator-table">
+      <thead><tr><th>SETOR</th><th>INDICADOR</th><th>VALOR ATUAL</th></tr></thead>
+      <tbody>
+        <tr><td>Operações</td><td>Taxa de pausa</td><td style="color:var(--danger)">47,6%</td></tr>
+        <tr><td>Operações</td><td>Obras em execução</td><td>11</td></tr>
+        <tr><td>Operações</td><td>Ciclo médio</td><td>238 dias</td></tr>
+        <tr><td>Operações</td><td>Throughput mensal</td><td>25 obras/mês</td></tr>
+        <tr><td>Projetos</td><td>Backlog em revisão</td><td>17 cards</td></tr>
+        <tr><td>Projetos</td><td>Aditivos ativos</td><td>6</td></tr>
+        <tr><td>Projetos</td><td>SLA VT Aferição</td><td style="color:var(--danger)">97% violado</td></tr>
+        <tr><td>Logística</td><td>Coletas pendentes (G1)</td><td style="color:var(--danger)">267</td></tr>
+        <tr><td>Logística</td><td>Material em trânsito</td><td>10 entregas</td></tr>
+        <tr><td>Produção</td><td>Ordens em produção</td><td>6 ativas</td></tr>
+        <tr><td>Comercial</td><td>Ticket médio 2026</td><td style="color:var(--accent)">R$ 151k</td></tr>
+        <tr><td>Comercial</td><td>m² médio por projeto</td><td>211m²</td></tr>
+        <tr><td>Contratos</td><td>Contratos finalizados</td><td>115</td></tr>
+        <tr><td>Contratos</td><td>Tabela preços 2026</td><td style="color:var(--accent2)">capturada</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <div style="font-size:.7rem;color:var(--warn);margin-bottom:12px">⏳ Aguardando dados externos</div>
+    <table class="indicator-table">
+      <thead><tr><th>SETOR</th><th>INDICADOR</th><th>FONTE</th></tr></thead>
+      <tbody>
+        <tr><td>Financeiro</td><td>Margem por projeto</td><td style="color:var(--warn)">Omie</td></tr>
+        <tr><td>Financeiro</td><td>Fluxo de caixa</td><td style="color:var(--warn)">Omie</td></tr>
+        <tr><td>Financeiro</td><td>Ponto de equilíbrio</td><td style="color:var(--warn)">Omie</td></tr>
+        <tr><td>Financeiro</td><td>Inadimplência</td><td style="color:var(--warn)">Omie</td></tr>
+        <tr><td>Financeiro</td><td>Custo por m²</td><td style="color:var(--warn)">Omie</td></tr>
+        <tr><td>Comercial</td><td>Taxa de conversão</td><td style="color:var(--muted)">CRM/planilha</td></tr>
+        <tr><td>Comercial</td><td>Ciclo de venda</td><td style="color:var(--muted)">CRM/planilha</td></tr>
+        <tr><td>Operações</td><td>Taxa de atraso real</td><td style="color:var(--muted)">Campo Pipefy</td></tr>
+        <tr><td>Operações</td><td>Motivo de pausa</td><td style="color:var(--muted)">Campo Pipefy</td></tr>
+        <tr><td>Pós-obra</td><td>NPS cliente</td><td style="color:var(--muted)">Processo novo</td></tr>
+        <tr><td>Pós-obra</td><td>Taxa de garantia</td><td style="color:var(--muted)">Processo novo</td></tr>
+        <tr><td>Produção</td><td>Custo produção/m²</td><td style="color:var(--warn)">Omie</td></tr>
+        <tr><td>RH</td><td>Capacidade equipes</td><td style="color:var(--muted)">Cadastro interno</td></tr>
+        <tr><td>Comercial</td><td>Volume de leads</td><td style="color:var(--muted)">CRM/planilha</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  <span>Monofloor &middot; Painel Operacional v1.0 &middot; Vitor Gomes &mdash; Gerente de Qualidade</span>
+  <span>Pipefy GraphQL + D4Sign &middot; 27/03/2026</span>
+</div>
+<script>
+const d=new Date();
+const el=document.getElementById('live-date');
+if(el) el.textContent=d.toLocaleDateString('pt-BR')+' — '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+setTimeout(()=>{document.querySelectorAll('.gargalo-fill,.phase-fill').forEach(el=>{const w=el.style.width;el.style.width='0';setTimeout(()=>{el.style.width=w;},100);});},200);
+</script>
+</body>
+</html>
