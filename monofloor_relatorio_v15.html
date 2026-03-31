@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monofloor · Relatório de Saúde Financeira v15</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --concrete-dark:#1A1714;
+  --concrete:#2C2520;
+  --concrete-mid:#4A3F38;
+  --stone:#9E8F82;
+  --stone-light:#C5B8AE;
+  --pearl:#F4F0EA;
+  --white:#FDFCFA;
+  --gold:#C8A96E;
+  --gold-light:#E8D4A8;
+  --gold-bg:#FBF6EC;
+  --ok:#3D6B4A;--ok-bg:#EAF4EE;--ok-bd:#A8D4B5;
+  --watch:#8B5A1A;--watch-bg:#FEF4E4;--watch-bd:#E8C880;
+  --act:#8B2020;--act-bg:#FDE8E8;--act-bd:#E8A8A8;
+  --info:#1A3A6B;--info-bg:#E8EFF8;--info-bd:#9BBCE0;
+  --border:#D8D0C5;
+  --font-head:'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  --font-body:system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'Courier New',Courier,monospace;
+}
+body{font-family:var(--font-body);background:var(--pearl);color:var(--concrete);font-size:14px;line-height:1.5}
+button{cursor:pointer;font-family:var(--font-body)}
+
+/* ═══ HEADER ═══ */
+.hdr{background:var(--concrete-dark);padding:0 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:100}
+.hdr-logo{display:flex;align-items:center;gap:16px;padding:16px 0}
+.logo-mark{width:42px;height:42px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--concrete-dark);letter-spacing:-.03em;border-radius:2px;flex-shrink:0}
+.logo-text{font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--white);letter-spacing:.08em;text-transform:uppercase}
+.logo-sub{font-size:10px;color:var(--stone-light);letter-spacing:.12em;text-transform:uppercase;margin-top:1px}
+.hdr-meta{display:flex;align-items:center;gap:8px;padding:16px 0;flex-wrap:wrap}
+.hdr-tag{font-family:var(--font-head);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:2px}
+.tag-ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
+.tag-watch{background:var(--watch-bg);color:var(--watch);border:1px solid var(--watch-bd)}
+.tag-act{background:var(--act-bg);color:var(--act);border:1px solid var(--act-bd)}
+.tag-info{background:var(--info-bg);color:var(--info);border:1px solid var(--info-bd)}
+.hdr-period{font-size:11px;color:var(--stone-light);font-family:var(--font-head);letter-spacing:.06em}
+
+/* ═══ TABS ═══ */
+.tabs{background:var(--concrete);display:flex;padding:0 40px;overflow-x:auto;border-bottom:1px solid var(--concrete-mid)}
+.tab{padding:14px 20px;font-family:var(--font-head);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:none;background:none;color:var(--stone-light);border-bottom:2px solid transparent;white-space:nowrap;margin-bottom:-1px;transition:all .2s}
+.tab:hover{color:var(--white)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* ═══ PANELS ═══ */
+.panel{display:none;max-width:1280px;margin:0 auto;padding:32px 40px 64px}
+.panel.active{display:block}
+
+/* ═══ EXECUTIVE BANNER ═══ */
+.exec-banner{background:var(--concrete);border-radius:8px;padding:24px 28px;margin-bottom:28px;display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;border-left:4px solid var(--gold)}
+.exec-title{font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.exec-text{font-size:13px;color:var(--stone-light);line-height:1.65;flex:2;min-width:240px}
+.exec-nums{display:flex;gap:20px;flex-wrap:wrap;flex:1}
+.exec-num{display:flex;flex-direction:column;gap:2px;flex:1;min-width:90px}
+.exec-nl{font-size:10px;font-weight:600;color:var(--stone);letter-spacing:.08em;text-transform:uppercase}
+.exec-nv{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--white)}
+.exec-ns{font-size:10px;color:var(--stone-light);margin-top:1px}
+.exec-div{width:1px;background:var(--concrete-mid);align-self:stretch;flex-shrink:0}
+
+/* ═══ SECTION HEADER ═══ */
+.sec-hdr{margin-bottom:16px}
+.sec-label{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--stone);display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.sec-label::before{content:'';display:block;width:20px;height:2px;background:var(--gold)}
+.sec-title{font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--concrete);letter-spacing:-.01em}
+
+/* ═══ TWO-COLUMN ═══ */
+.two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:20px}
+.two-col.flip{grid-template-columns:1fr 1.4fr}
+.two-col.equal{grid-template-columns:1fr 1fr}
+@media(max-width:900px){.two-col,.two-col.flip,.two-col.equal{grid-template-columns:1fr}}
+
+/* ═══ DATA CARD ═══ */
+.data-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:20px 22px}
+.data-card-title{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);margin-bottom:14px}
+
+/* ═══ EXPLAIN CARD ═══ */
+.explain-card{background:var(--concrete-dark);border-radius:8px;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.explain-headline{font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--gold);line-height:1.3}
+.explain-body{font-size:12px;color:var(--stone-light);line-height:1.7}
+.explain-body strong{color:var(--white)}
+.explain-alert{padding:8px 12px;border-radius:4px;font-size:11px;line-height:1.5}
+.ea-ok{background:rgba(61,107,74,.2);color:#8DC9A0;border-left:3px solid var(--ok)}
+.ea-watch{background:rgba(139,90,26,.2);color:#E8C880;border-left:3px solid var(--watch)}
+.ea-act{background:rgba(139,32,32,.2);color:#E8A8A8;border-left:3px solid var(--act)}
+
+/* ═══ METRIC GRID ═══ */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.metric{background:var(--white);border:1px solid var(--border);border-radius:6px;padding:14px 16px}
+.metric-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--stone);margin-bottom:4px}
+.metric-v{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--concrete);line-height:1}
+.metric-s{font-size:10px;color:var(--stone);margin-top:4px}
+.mv-ok{color:var(--ok)}.mv-watch{color:var(--watch)}.mv-act{color:var(--act)}.mv-gold{color:var(--gold)}
+
+/* ═══ RULER ═══ */
+.ruler{height:36px;border-radius:4px;position:relative;overflow:hidden;display:flex;margin-bottom:6px;border:1px solid var(--border)}
+.ruler-zone{display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.rz-r{background:var(--act-bg);color:var(--act)}
+.rz-w{background:var(--watch-bg);color:var(--watch)}
+.rz-g{background:var(--ok-bg);color:var(--ok);flex:1}
+.ruler-needle{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--concrete);border-radius:2px;transform:translateX(-50%);transition:left .9s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 0 2px rgba(0,0,0,.1)}
+.ruler-tip{position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:var(--concrete);color:var(--white);font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 7px;border-radius:3px;white-space:nowrap}
+.ruler-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--stone);padding-top:4px}
+
+/* ═══ MES CHIPS ═══ */
+.mes-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.mes-chip{flex:1;min-width:60px;background:#EDE5DC;border-radius:4px;padding:6px 8px}
+.mc-l{font-size:9px;font-weight:700;color:var(--stone);text-transform:uppercase;letter-spacing:.05em}
+.mc-v{font-family:var(--font-mono);font-size:13px;font-weight:700;margin-top:1px}
+.mc-s{font-size:9px;color:var(--stone);margin-top:1px}
+
+/* ═══ TABLE ═══ */
+.tbl-wrap{border:1px solid var(--border);border-radius:8px;overflow:auto;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;min-width:480px;background:var(--white)}
+thead tr{background:#EDE5DC}
+th{padding:9px 14px;font-family:var(--font-head);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--stone);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#F8F3EE}
+.mono{font-family:var(--font-mono);font-weight:600}
+
+/* ═══ BADGES ═══ */
+.sbadge{font-family:var(--font-mono);font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;white-space:nowrap}
+.sb-ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
+.sb-watch{background:var(--watch-bg);color:var(--watch);border:1px solid var(--watch-bd)}
+.sb-act{background:var(--act-bg);color:var(--act);border:1px solid var(--act-bd)}
+
+/* ═══ HBAR ═══ */
+.hbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.hbar-name{width:170px;font-size:12px;color:var(--concrete-mid);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar-track{flex:1;height:12px;background:#EDE5DC;border-radius:2px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:2px;transition:width .7s}
+.hbar-val{font-family:var(--font-mono);font-size:11px;font-weight:700;width:56px;text-align:right;flex-shrink:0;color:var(--concrete)}
+
+/* ═══ GRIDS ═══ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* ═══ SEPARATOR ═══ */
+.sep{height:1px;background:var(--border);margin:28px 0}
+
+/* ═══ ALERT BOX ═══ */
+.alert-box{border-radius:8px;padding:16px 20px;margin-bottom:16px;display:flex;gap:16px;align-items:flex-start}
+.alert-box.critical{background:var(--act-bg);border:1px solid var(--act-bd)}
+.alert-box.warning{background:var(--watch-bg);border:1px solid var(--watch-bd)}
+.alert-box.success{background:var(--ok-bg);border:1px solid var(--ok-bd)}
+.alert-box.info{background:var(--info-bg);border:1px solid var(--info-bd)}
+.alert-icon{font-size:24px;flex-shrink:0}
+.alert-content{flex:1}
+.alert-title{font-family:var(--font-head);font-size:13px;font-weight:700;margin-bottom:4px}
+.alert-box.critical .alert-title{color:var(--act)}
+.alert-box.warning .alert-title{color:var(--watch)}
+.alert-box.success .alert-title{color:var(--ok)}
+.alert-box.info .alert-title{color:var(--info)}
+.alert-text{font-size:12px;color:var(--concrete-mid);line-height:1.5}
+
+/* ═══ RISK CARD ═══ */
+.risk-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:16px 18px;border-left:4px solid var(--act);cursor:pointer;transition:all .2s}
+.risk-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.risk-card.active{background:var(--gold-bg);border-color:var(--gold)}
+.risk-card.warning{border-left-color:var(--watch)}
+.risk-card.ok{border-left-color:var(--ok)}
+.risk-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.risk-title{font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--concrete)}
+.risk-value{font-family:var(--font-mono);font-size:18px;font-weight:700}
+.risk-value.act{color:var(--act)}
+.risk-value.watch{color:var(--watch)}
+.risk-value.ok{color:var(--ok)}
+.risk-detail{font-size:11px;color:var(--stone)}
+.risk-bar{height:6px;background:#EDE5DC;border-radius:3px;margin-top:8px;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:3px}
+
+/* ═══ DONUT CHART ═══ */
+.chart-container{position:relative;width:100%;max-width:320px;margin:0 auto}
+.donut-chart{width:100%;height:auto;cursor:pointer}
+.chart-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.chart-center-value{font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--concrete)}
+.chart-center-label{font-size:10px;color:var(--stone);text-transform:uppercase;letter-spacing:.08em}
+.chart-legend{margin-top:16px}
+.legend-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:all .2s;border-radius:4px}
+.legend-item:hover{background:var(--gold-bg);transform:translateX(4px)}
+.legend-item.active{background:var(--gold-bg);border-left:3px solid var(--gold)}
+.legend-item:last-child{border-bottom:none}
+.legend-color{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+.legend-name{flex:1;font-size:12px}
+.legend-value{font-family:var(--font-mono);font-size:12px;font-weight:600}
+.legend-pct{font-family:var(--font-mono);font-size:11px;color:var(--stone);width:50px;text-align:right}
+
+/* ═══ DRILL-DOWN PANEL ═══ */
+.drill-panel{display:none;background:var(--concrete-dark);border-radius:8px;padding:20px;margin-top:20px;animation:slideIn .3s ease}
+.drill-panel.show{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.drill-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--concrete-mid)}
+.drill-title{font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--white)}
+.drill-close{background:none;border:none;color:var(--stone-light);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:4px}
+.drill-close:hover{background:var(--concrete-mid);color:var(--white)}
+.drill-grid{display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto}
+.drill-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--concrete);border-radius:6px;transition:all .2s}
+.drill-item:hover{background:var(--concrete-mid);transform:translateX(4px)}
+.drill-rank{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--gold);width:24px;text-align:center;flex-shrink:0}
+.drill-info{flex:1;min-width:0}
+.drill-nome{font-size:12px;color:var(--white);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drill-bar-track{height:4px;background:var(--concrete-mid);border-radius:2px;overflow:hidden}
+.drill-bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.drill-valores{text-align:right;flex-shrink:0}
+.drill-valor{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--gold-light)}
+.drill-pct{font-family:var(--font-mono);font-size:10px;color:var(--stone-light)}
+
+/* ═══ OPERACIONAL DRILL-DOWN ═══ */
+.op-drill-panel{display:none;background:var(--concrete-dark);border-radius:8px;padding:20px;margin-top:20px;animation:slideIn .3s ease}
+.op-drill-panel.show{display:block}
+.op-drill-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--concrete-mid)}
+.op-drill-title{font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--white)}
+.op-drill-subtitle{font-size:11px;color:var(--stone-light);margin-top:4px}
+.op-drill-close{background:none;border:none;color:var(--stone-light);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:4px}
+.op-drill-close:hover{background:var(--concrete-mid);color:var(--white)}
+.op-drill-grid{display:grid;gap:10px;max-height:400px;overflow-y:auto}
+.op-obra{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--concrete);border-radius:6px;transition:all .2s}
+.op-obra:hover{background:var(--concrete-mid);transform:translateX(4px)}
+.op-obra-rank{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--gold);width:24px;text-align:center;flex-shrink:0}
+.op-obra-info{flex:1;min-width:0}
+.op-obra-nome{font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.op-obra-meta{display:flex;gap:12px;font-size:11px;color:var(--stone-light)}
+.op-obra-meta span{display:flex;align-items:center;gap:4px}
+.op-obra-dias{text-align:right;flex-shrink:0}
+.op-obra-dias-val{font-family:var(--font-mono);font-size:16px;font-weight:700}
+.op-obra-dias-val.critico{color:var(--act)}
+.op-obra-dias-val.alerta{color:var(--watch)}
+.op-obra-dias-val.ok{color:var(--ok)}
+.op-obra-dias-label{font-size:9px;color:var(--stone-light);text-transform:uppercase}
+
+/* ═══ TOOLTIP ═══ */
+.tooltip{position:fixed;background:var(--concrete-dark);color:var(--white);padding:12px 16px;border-radius:6px;font-size:12px;pointer-events:none;z-index:1000;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,.3);opacity:0;transition:opacity .15s}
+.tooltip.show{opacity:1}
+.tooltip-title{font-weight:700;margin-bottom:4px;color:var(--gold)}
+.tooltip-value{font-family:var(--font-mono);font-size:16px;font-weight:700}
+.tooltip-pct{font-size:11px;color:var(--stone-light)}
+
+/* ═══ STACKED BAR MARGIN ═══ */
+.margin-bar{height:48px;border-radius:4px;overflow:hidden;display:flex;margin-bottom:8px;border:1px solid var(--border)}
+.margin-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:rgba(255,255,255,.95);transition:all .2s;cursor:pointer;position:relative}
+.margin-seg:hover{filter:brightness(1.1)}
+.margin-seg .seg-label{position:absolute;font-size:9px;opacity:0;transition:opacity .2s}
+.margin-seg:hover .seg-label{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- Tooltip global -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- ═══ HEADER ═══ -->
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="logo-mark">M</div>
+    <div>
+      <div class="logo-text">Monofloor</div>
+      <div class="logo-sub">Relatório Consolidado v15</div>
+    </div>
+  </div>
+  <div class="hdr-meta">
+    <div class="hdr-period">Dez/25 – Mar/26 · Atualizado 31/03/2026</div>
+    <span class="hdr-tag tag-ok">✓ Valores corrigidos</span>
+    <span class="hdr-tag tag-act">106 obras críticas</span>
+  </div>
+</div>
+
+<!-- ═══ TABS ═══ -->
+<div class="tabs" id="tabs">
+  <button class="tab active" data-panel="p-saude">Saúde Financeira</button>
+  <button class="tab" data-panel="p-riscos">Riscos Operacionais</button>
+  <button class="tab" data-panel="p-custos">Custos por Categoria</button>
+  <button class="tab" data-panel="p-projecao">Projeção Saudável</button>
+  <button class="tab" data-panel="p-devolucoes">Devoluções & Prejuízos</button>
+  <button class="tab" data-panel="p-evolucao">Evolução Mensal</button>
+  <button class="tab" data-panel="p-tabela">Tabela Resumo</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TAB 1 — SAÚDE FINANCEIRA
+══════════════════════════════════════════════════════════════════════ -->
+<div class="panel active" id="p-saude">
+
+  <!-- EXECUTIVE BANNER -->
+  <div class="exec-banner">
+    <div style="flex:2;min-width:240px">
+      <div class="exec-title">Diagnóstico executivo · 4 meses</div>
+      <p class="exec-text">
+        A Monofloor faturou <strong style="color:var(--white)">R$ 6,05 milhões</strong> entre dezembro de 2025 e março de 2026,
+        com <strong style="color:var(--white)">57 contratos</strong> executados.
+        A margem bruta de <strong style="color:var(--gold)">40,9%</strong> está acima da meta de 35%.
+        <strong style="color:var(--watch-bd)">MATA-METRO caiu 96%</strong> de Dez→Mar, indicando melhoria na alocação de custos.
+      </p>
+    </div>
+    <div class="exec-div"></div>
+    <div class="exec-nums">
+      <div class="exec-num">
+        <div class="exec-nl">Receita</div>
+        <div class="exec-nv">6,05 M</div>
+        <div class="exec-ns">57 contratos</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Margem</div>
+        <div class="exec-nv" style="color:var(--ok)">40,9%</div>
+        <div class="exec-ns">Meta: ≥35%</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Obras ativas</div>
+        <div class="exec-nv">182</div>
+        <div class="exec-ns">106 críticas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="alert-box success">
+    <div class="alert-icon">✅</div>
+    <div class="alert-content">
+      <div class="alert-title">Margem bruta em 40,92% — acima da meta</div>
+      <div class="alert-text">Custo operacional de R$ 3,93M (65,06% da receita) resulta em margem de R$ 2,11M. Performance financeira saudável.</div>
+    </div>
+  </div>
+
+  <div class="alert-box warning">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-content">
+      <div class="alert-title">MATA-METRO em 19,51% — acima da meta de 15%</div>
+      <div class="alert-text">Pool de mão de obra não alocada representa R$ 1,18M. Porém, <strong>reduziu 96%</strong> de Dez/Jan para Fev/Mar.</div>
+    </div>
+  </div>
+
+  <div class="alert-box warning">
+    <div class="alert-icon">📦</div>
+    <div class="alert-content">
+      <div class="alert-title">Devoluções de Vendas: R$ 361.803 (5,98%)</div>
+      <div class="alert-text">Valor expressivo de devoluções que impacta diretamente a receita líquida e margem real.</div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- RÉGUA MARGEM -->
+  <div class="two-col" style="margin-bottom:20px">
+    <div class="data-card">
+      <div class="data-card-title">Régua de margem bruta</div>
+      <div style="padding-top:20px">
+        <div class="ruler">
+          <div class="ruler-zone rz-r" style="width:25%">Crítico &lt;25%</div>
+          <div class="ruler-zone rz-w" style="width:10%">Atenção</div>
+          <div class="ruler-zone rz-g">Saudável ≥ 35%</div>
+          <div class="ruler-needle" style="left:81.8%">
+            <div class="ruler-tip">40,9%</div>
+          </div>
+        </div>
+        <div class="ruler-labels">
+          <span>0%</span><span>10%</span><span>20%</span>
+          <span style="color:var(--act);font-weight:700">25%</span>
+          <span style="color:var(--ok);font-weight:700">35%</span>
+          <span>45%</span><span>50%+</span>
+        </div>
+      </div>
+      <div class="mes-row" style="margin-top:16px">
+        <div class="mes-chip"><div class="mc-l">Dez/25</div><div class="mc-v" style="color:var(--ok)">38,5%</div></div>
+        <div class="mes-chip"><div class="mc-l">Jan/26</div><div class="mc-v" style="color:var(--ok)">38,2%</div></div>
+        <div class="mes-chip"><div class="mc-l">Fev/26</div><div class="mc-v" style="color:var(--ok)">41,8%</div></div>
+        <div class="mes-chip"><div class="mc-l">Mar/26</div><div class="mc-v" style="color:var(--ok)">44,2%</div></div>
+      </div>
+    </div>
+    <div class="explain-card">
+      <div class="explain-headline">Margem crescente mês a mês</div>
+      <div class="explain-body">
+        A margem saiu de <strong>38,5% em Dez</strong> para <strong>44,2% em Mar</strong> — ganho de 5,7 pontos percentuais.
+        Isso reflete a migração do pool MATA-METRO para custos alocados por projeto.
+      </div>
+      <div class="explain-alert ea-ok">
+        ✓ Tendência positiva: cada mês melhor que o anterior
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TAB 2 — RISCOS OPERACIONAIS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-riscos">
+
+  <div class="exec-banner" style="border-left-color:var(--act)">
+    <div style="flex:2;min-width:240px">
+      <div class="exec-title" style="color:var(--act)">⚠️ Painel de Riscos Operacionais</div>
+      <p class="exec-text">
+        Dados extraídos do sistema Monofloor em tempo real. 
+        <strong style="color:var(--white)">182 obras em andamento</strong> com apenas 
+        <strong style="color:var(--act-bd)">24% no prazo</strong>.
+        O principal gargalo é <strong style="color:var(--watch-bd)">"Material em produção"</strong> com 45% de cumprimento.
+      </p>
+    </div>
+    <div class="exec-div"></div>
+    <div class="exec-nums">
+      <div class="exec-num">
+        <div class="exec-nl">Obras Ativas</div>
+        <div class="exec-nv">182</div>
+        <div class="exec-ns">823 entregues</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">No Prazo</div>
+        <div class="exec-nv" style="color:var(--act)">24%</div>
+        <div class="exec-ns">32 de 135</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Problemas</div>
+        <div class="exec-nv" style="color:var(--act)">499</div>
+        <div class="exec-ns">em aberto</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS DE RISCO -->
+  <div class="sec-hdr">
+    <div class="sec-label">Indicadores críticos</div>
+    <div class="sec-title">Cumprimento de Prazos por Etapa <span style="font-weight:400;color:var(--stone-light)">(clique para ver obras)</span></div>
+  </div>
+
+  <div class="g4" id="risk-cards-container">
+    <div class="risk-card" data-etapa="Material em Produção">
+      <div class="risk-header">
+        <div class="risk-title">Material em Produção</div>
+        <div class="risk-value act">45%</div>
+      </div>
+      <div class="risk-detail">Gargalo crítico — metade das obras paradas</div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:45%;background:var(--act)"></div></div>
+    </div>
+    <div class="risk-card warning" data-etapa="VT Entrada Agendada">
+      <div class="risk-header">
+        <div class="risk-title">VT Entrada Agendada</div>
+        <div class="risk-value watch">50%</div>
+      </div>
+      <div class="risk-detail">Visita técnica com atraso</div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:50%;background:var(--watch)"></div></div>
+    </div>
+    <div class="risk-card warning" data-etapa="Logística Programada">
+      <div class="risk-header">
+        <div class="risk-title">Logística Programada</div>
+        <div class="risk-value watch">53%</div>
+      </div>
+      <div class="risk-detail">Programação com gaps</div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:53%;background:var(--watch)"></div></div>
+    </div>
+    <div class="risk-card ok" data-etapa="Equipe Definida">
+      <div class="risk-header">
+        <div class="risk-title">Equipe Definida</div>
+        <div class="risk-value ok">90%</div>
+      </div>
+      <div class="risk-detail">Equipe alocada</div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:90%;background:var(--ok)"></div></div>
+    </div>
+  </div>
+
+  <!-- Mais cards -->
+  <div class="g4" style="margin-top:-6px">
+    <div class="risk-card" data-etapa="Em Execução">
+      <div class="risk-header">
+        <div class="risk-title">Em Execução</div>
+        <div class="risk-value act">20</div>
+      </div>
+      <div class="risk-detail">Obras ativas em campo</div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:100%;background:var(--gold)"></div></div>
+    </div>
+    <div class="risk-card" data-etapa="Obras Pausadas">
+      <div class="risk-header">
+        <div class="risk-title">Obras Pausadas</div>
+        <div class="risk-value act">12</div>
+      </div>
+      <div class="risk-detail">1.584m² parados</div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:100%;background:var(--act)"></div></div>
+    </div>
+    <div class="risk-card warning" data-etapa="Aguardando Clima">
+      <div class="risk-header">
+        <div class="risk-title">Aguardando Clima</div>
+        <div class="risk-value watch">8</div>
+      </div>
+      <div class="risk-detail">Condições climáticas</div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:100%;background:var(--watch)"></div></div>
+    </div>
+    <div class="risk-card warning" data-etapa="Reparo">
+      <div class="risk-header">
+        <div class="risk-title">Reparo</div>
+        <div class="risk-value watch">16</div>
+      </div>
+      <div class="risk-detail">Reaplicações e correções</div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:100%;background:var(--watch)"></div></div>
+    </div>
+  </div>
+
+  <!-- PAINEL DE DRILL-DOWN OPERACIONAL -->
+  <div class="op-drill-panel" id="op-drill-panel">
+    <div class="op-drill-header">
+      <div>
+        <div class="op-drill-title" id="op-drill-title">Obras</div>
+        <div class="op-drill-subtitle" id="op-drill-subtitle"></div>
+      </div>
+      <button class="op-drill-close" onclick="hideOpDrill()">✕</button>
+    </div>
+    <div class="op-drill-grid" id="op-drill-grid">
+      <!-- Obras inseridas via JS -->
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- OBRAS CRÍTICAS -->
+  <div class="sec-hdr">
+    <div class="sec-label">Atenção imediata</div>
+    <div class="sec-title">Obras com Maior Atraso</div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Obra</th>
+          <th>Dias/Plan</th>
+          <th>Local</th>
+          <th>m²</th>
+          <th>Status</th>
+          <th>Risco</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>CLÁUDIA RESENDE SOARES</strong></td>
+          <td class="mono" style="color:var(--act)">182/10</td>
+          <td>RJ</td>
+          <td class="mono">148</td>
+          <td>Em Execução</td>
+          <td><span class="sbadge sb-act">172d ATRASO</span></td>
+        </tr>
+        <tr>
+          <td><strong>ALEXANDRE OSMAN - BILAL</strong></td>
+          <td class="mono" style="color:var(--act)">108/14</td>
+          <td>SBC</td>
+          <td class="mono">203</td>
+          <td>Em Execução</td>
+          <td><span class="sbadge sb-act">94d ATRASO</span></td>
+        </tr>
+        <tr>
+          <td><strong>GUILHERME WENTZ</strong></td>
+          <td class="mono" style="color:var(--act)">139d</td>
+          <td>SP</td>
+          <td class="mono">249</td>
+          <td>Pausada</td>
+          <td><span class="sbadge sb-act">PAUSADA</span></td>
+        </tr>
+        <tr>
+          <td><strong>ANTONIO CARLOS CANTO</strong></td>
+          <td class="mono" style="color:var(--act)">111d</td>
+          <td>SP</td>
+          <td class="mono">363</td>
+          <td>Pausada</td>
+          <td><span class="sbadge sb-act">PAUSADA</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TAB 3 — CUSTOS POR CATEGORIA
+══════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-custos">
+
+  <div class="sec-hdr">
+    <div class="sec-label">Composição</div>
+    <div class="sec-title">Custo Operacional — Gráfico Interativo</div>
+  </div>
+
+  <div class="alert-box info">
+    <div class="alert-icon">📊</div>
+    <div class="alert-content">
+      <div class="alert-title">O que compõe o Custo Operacional?</div>
+      <div class="alert-text">
+        <strong>Custo operacional = todos os gastos diretamente ligados à execução das obras.</strong><br>
+        Inclui: <strong style="color:var(--ok)">matéria-prima (microcimento, resinas, pigmentos)</strong>, mão de obra (prestadores + MATA-METRO), hospedagem, deslocamento, alimentação, materiais de consumo, fretes, visitas técnicas, supervisão, comissões e devoluções de vendas.<br>
+        <strong>Não inclui:</strong> impostos, salários administrativos, aluguel de escritório, marketing.
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col equal">
+    <!-- GRÁFICO DONUT -->
+    <div class="data-card">
+      <div class="data-card-title">Distribuição de Custos <span style="font-weight:400;color:var(--stone-light)">(clique para ver projetos)</span></div>
+      <div class="chart-container">
+        <svg class="donut-chart" viewBox="0 0 200 200" id="donut-chart">
+          <!-- Segmentos serão inseridos via JS -->
+        </svg>
+        <div class="chart-center">
+          <div class="chart-center-value">R$ 4,91M</div>
+          <div class="chart-center-label">Custo Total</div>
+        </div>
+      </div>
+      <div class="chart-legend" id="chart-legend">
+        <!-- Legenda inserida via JS -->
+      </div>
+      
+      <!-- DRILL-DOWN PANEL -->
+      <div class="drill-panel" id="drill-panel">
+        <div class="drill-header">
+          <div class="drill-title" id="drill-title">Projetos</div>
+          <button class="drill-close" onclick="hideDrillDown()">✕</button>
+        </div>
+        <div class="drill-grid" id="drill-grid">
+          <!-- Projetos inseridos via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TABELA -->
+    <div class="data-card">
+      <div class="data-card-title">Detalhamento por Categoria</div>
+      <div class="tbl-wrap" style="margin-bottom:0;border:none">
+        <table style="min-width:auto">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th style="text-align:right">Valor</th>
+              <th style="text-align:right">%</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-custos">
+            <!-- Inserido via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- TOP PROJETOS -->
+  <div class="sec-hdr">
+    <div class="sec-label">Drill-down</div>
+    <div class="sec-title">Top 10 Projetos — Mão de Obra Direta</div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Projeto</th>
+          <th style="text-align:right">Valor</th>
+          <th style="text-align:right">%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">1</td><td>AVVA HOUSE - MOZART DA SILVA</td><td class="mono" style="text-align:right">R$ 91.302</td><td class="mono" style="text-align:right">9,2%</td></tr>
+        <tr><td class="mono">2</td><td>ROBERTA ESTRELA D'ALVA</td><td class="mono" style="text-align:right">R$ 60.681</td><td class="mono" style="text-align:right">6,1%</td></tr>
+        <tr><td class="mono">3</td><td>CAROLINA RACHE GUIMARAES</td><td class="mono" style="text-align:right">R$ 56.882</td><td class="mono" style="text-align:right">5,7%</td></tr>
+        <tr><td class="mono">4</td><td>FELIPE GUSTAVO LOPES</td><td class="mono" style="text-align:right">R$ 31.608</td><td class="mono" style="text-align:right">3,2%</td></tr>
+        <tr><td class="mono">5</td><td>MARCOS JOSÉ VEIGA GOMES</td><td class="mono" style="text-align:right">R$ 25.850</td><td class="mono" style="text-align:right">2,6%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TAB 4 — PROJEÇÃO SAUDÁVEL
+══════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-projecao">
+
+  <!-- HEADER VISUAL -->
+  <div class="exec-banner" style="border-left-color:var(--gold);margin-bottom:20px">
+    <div style="flex:2;min-width:240px">
+      <div class="exec-title" style="color:var(--gold)">🎯 Análise de Custos — Real vs Benchmark</div>
+      <p class="exec-text">
+        Compare o <strong style="color:var(--act)">custo real</strong> de cada categoria com o 
+        <strong style="color:var(--ok)">benchmark saudável</strong> baseado em % da receita.
+        Barras verdes = dentro da meta. Barras vermelhas = acima da meta.
+      </p>
+    </div>
+    <div class="exec-div"></div>
+    <div class="exec-nums">
+      <div class="exec-num">
+        <div class="exec-nl">Receita Total</div>
+        <div class="exec-nv" style="color:var(--gold)">R$ 6,05M</div>
+        <div class="exec-ns">4 meses</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Custo Total</div>
+        <div class="exec-nv" style="color:var(--watch)">R$ 4,91M</div>
+        <div class="exec-ns">81,2% da receita</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Benchmark</div>
+        <div class="exec-nv" style="color:var(--ok)">40,5%</div>
+        <div class="exec-ns">custo ideal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARATIVO VISUAL - PRINCIPAL -->
+  <div class="sec-hdr">
+    <div class="sec-label">Comparativo</div>
+    <div class="sec-title">Custo Real vs Benchmark por Categoria</div>
+  </div>
+
+  <div class="data-card" style="margin-bottom:20px">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      
+      <!-- MATA-METRO -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--act-bg);border-radius:8px">
+        <div style="width:160px">
+          <div style="font-weight:700;color:var(--act)">🚨 MATA-METRO</div>
+          <div style="font-size:11px;color:var(--stone)">Pool não alocado</div>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px">Meta: 5%</span>
+            <span style="font-size:11px;font-weight:700;color:var(--act)">Atual: 19,5% (+14,5pp)</span>
+          </div>
+          <div style="height:24px;background:var(--pearl);border-radius:4px;overflow:hidden;position:relative">
+            <div style="position:absolute;height:100%;width:10%;background:var(--ok);opacity:0.3"></div>
+            <div style="position:absolute;height:100%;width:39%;background:var(--act);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">
+              <span style="font-size:11px;color:white;font-weight:700">R$ 1.180k</span>
+            </div>
+          </div>
+        </div>
+        <div style="width:100px;text-align:right">
+          <div style="font-size:18px;font-weight:700;color:var(--act)">+R$ 877k</div>
+          <div style="font-size:10px;color:var(--stone)">acima do ideal</div>
+        </div>
+      </div>
+
+      <!-- MATÉRIA-PRIMA -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ok-bg);border-radius:8px">
+        <div style="width:160px">
+          <div style="font-weight:700;color:var(--ok)">✅ Matéria-Prima</div>
+          <div style="font-size:11px;color:var(--stone)">Microcimento, resinas</div>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px">Meta: 16%</span>
+            <span style="font-size:11px;font-weight:700;color:var(--ok)">Atual: 16,2% (OK)</span>
+          </div>
+          <div style="height:24px;background:var(--pearl);border-radius:4px;overflow:hidden;position:relative">
+            <div style="position:absolute;height:100%;width:32%;background:var(--ok);opacity:0.3"></div>
+            <div style="position:absolute;height:100%;width:32.4%;background:var(--ok);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">
+              <span style="font-size:11px;color:white;font-weight:700">R$ 979k</span>
+            </div>
+          </div>
+        </div>
+        <div style="width:100px;text-align:right">
+          <div style="font-size:18px;font-weight:700;color:var(--ok)">✓ OK</div>
+          <div style="font-size:10px;color:var(--stone)">dentro da meta</div>
+        </div>
+      </div>
+
+      <!-- MÃO DE OBRA -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--ok-bg);border-radius:8px">
+        <div style="width:160px">
+          <div style="font-weight:700;color:var(--ok)">✅ Mão de Obra Direta</div>
+          <div style="font-size:11px;color:var(--stone)">Prestadores alocados</div>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px">Meta: 20%</span>
+            <span style="font-size:11px;font-weight:700;color:var(--ok)">Atual: 16,4% (OK)</span>
+          </div>
+          <div style="height:24px;background:var(--pearl);border-radius:4px;overflow:hidden;position:relative">
+            <div style="position:absolute;height:100%;width:40%;background:var(--ok);opacity:0.3"></div>
+            <div style="position:absolute;height:100%;width:32.8%;background:var(--ok);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">
+              <span style="font-size:11px;color:white;font-weight:700">R$ 992k</span>
+            </div>
+          </div>
+        </div>
+        <div style="width:100px;text-align:right">
+          <div style="font-size:18px;font-weight:700;color:var(--ok)">-3,6pp</div>
+          <div style="font-size:10px;color:var(--stone)">abaixo da meta</div>
+        </div>
+      </div>
+
+      <!-- HOSPEDAGEM -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--watch-bg);border-radius:8px">
+        <div style="width:160px">
+          <div style="font-weight:700;color:var(--watch)">⚠️ Hospedagem</div>
+          <div style="font-size:11px;color:var(--stone)">Hotel equipes</div>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px">Meta: 3%</span>
+            <span style="font-size:11px;font-weight:700;color:var(--watch)">Atual: 4,5% (+1,5pp)</span>
+          </div>
+          <div style="height:24px;background:var(--pearl);border-radius:4px;overflow:hidden;position:relative">
+            <div style="position:absolute;height:100%;width:6%;background:var(--ok);opacity:0.3"></div>
+            <div style="position:absolute;height:100%;width:9%;background:var(--watch);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">
+              <span style="font-size:11px;color:white;font-weight:700">R$ 269k</span>
+            </div>
+          </div>
+        </div>
+        <div style="width:100px;text-align:right">
+          <div style="font-size:18px;font-weight:700;color:var(--watch)">+R$ 91k</div>
+          <div style="font-size:10px;color:var(--stone)">acima do ideal</div>
+        </div>
+      </div>
+
+      <!-- LOGÍSTICA -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--watch-bg);border-radius:8px">
+        <div style="width:160px">
+          <div style="font-weight:700;color:var(--watch)">⚠️ Logística</div>
+          <div style="font-size:11px;color:var(--stone)">Km, frete, deslocamento</div>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px">Meta: 5%</span>
+            <span style="font-size:11px;font-weight:700;color:var(--watch)">Atual: 6,5% (+1,5pp)</span>
+          </div>
+          <div style="height:24px;background:var(--pearl);border-radius:4px;overflow:hidden;position:relative">
+            <div style="position:absolute;height:100%;width:10%;background:var(--ok);opacity:0.3"></div>
+            <div style="position:absolute;height:100%;width:13%;background:var(--watch);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">
+              <span style="font-size:11px;color:white;font-weight:700">R$ 390k</span>
+            </div>
+          </div>
+        </div>
+        <div style="width:100px;text-align:right">
+          <div style="font-size:18px;font-weight:700;color:var(--watch)">+R$ 91k</div>
+          <div style="font-size:10px;color:var(--stone)">acima do ideal</div>
+        </div>
+      </div>
+
+      <!-- DEVOLUÇÕES -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--act-bg);border-radius:8px">
+        <div style="width:160px">
+          <div style="font-weight:700;color:var(--act)">🚨 Devoluções</div>
+          <div style="font-size:11px;color:var(--stone)">Cancelamentos</div>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px">Meta: 2%</span>
+            <span style="font-size:11px;font-weight:700;color:var(--act)">Atual: 6% (+4pp)</span>
+          </div>
+          <div style="height:24px;background:var(--pearl);border-radius:4px;overflow:hidden;position:relative">
+            <div style="position:absolute;height:100%;width:4%;background:var(--ok);opacity:0.3"></div>
+            <div style="position:absolute;height:100%;width:12%;background:var(--act);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">
+              <span style="font-size:11px;color:white;font-weight:700">R$ 362k</span>
+            </div>
+          </div>
+        </div>
+        <div style="width:100px;text-align:right">
+          <div style="font-size:18px;font-weight:700;color:var(--act)">+R$ 242k</div>
+          <div style="font-size:10px;color:var(--stone)">acima do ideal</div>
+        </div>
+      </div>
+
+    </div>
+    
+    <!-- LEGENDA -->
+    <div style="display:flex;gap:24px;justify-content:center;padding-top:16px;margin-top:16px;border-top:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:12px;background:var(--ok);opacity:0.3;border-radius:2px"></div>
+        <span style="font-size:11px">Benchmark (meta)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:12px;background:var(--ok);border-radius:2px"></div>
+        <span style="font-size:11px">Dentro da meta</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:12px;background:var(--watch);border-radius:2px"></div>
+        <span style="font-size:11px">Atenção</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:12px;background:var(--act);border-radius:2px"></div>
+        <span style="font-size:11px">Crítico</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- RESUMO DE OPORTUNIDADES -->
+  <div class="sec-hdr">
+    <div class="sec-label">Oportunidades</div>
+    <div class="sec-title">💰 Potencial de Economia por Categoria</div>
+  </div>
+
+  <div class="g3" style="margin-bottom:20px">
+    <div class="data-card" style="text-align:center;border-left:4px solid var(--act)">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:8px">MATA-METRO → 5%</div>
+      <div style="font-size:32px;font-weight:700;color:var(--act)">R$ 877k</div>
+      <div style="font-size:11px;color:var(--ok);margin-top:8px">Maior oportunidade!</div>
+      <div style="font-size:10px;color:var(--stone);margin-top:4px">Se alocar 100% por projeto</div>
+    </div>
+    <div class="data-card" style="text-align:center;border-left:4px solid var(--act)">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:8px">DEVOLUÇÕES → 2%</div>
+      <div style="font-size:32px;font-weight:700;color:var(--act)">R$ 242k</div>
+      <div style="font-size:11px;color:var(--watch);margin-top:8px">Alto impacto</div>
+      <div style="font-size:10px;color:var(--stone);margin-top:4px">Investigar TGSJ + top 5</div>
+    </div>
+    <div class="data-card" style="text-align:center;border-left:4px solid var(--watch)">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:8px">HOSPEDAGEM + LOGÍSTICA</div>
+      <div style="font-size:32px;font-weight:700;color:var(--watch)">R$ 182k</div>
+      <div style="font-size:11px;color:var(--info);margin-top:8px">Médio prazo</div>
+      <div style="font-size:10px;color:var(--stone);margin-top:4px">Negociar contratos</div>
+    </div>
+  </div>
+
+  <div class="alert-box success" style="margin-bottom:20px">
+    <div class="alert-icon">💡</div>
+    <div class="alert-content">
+      <div class="alert-title" style="color:var(--ok)">Potencial Total de Economia: R$ 1,3M em 4 meses</div>
+      <div class="alert-text">
+        Se todas as categorias atingirem o benchmark, a margem sobe de <strong>40,9%</strong> para <strong>63,3%</strong>.
+        <br>Isso significa <strong>+R$ 339k de lucro adicional por mês</strong>.
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- DETALHAMENTO MATÉRIA-PRIMA -->
+  <div class="sec-hdr">
+    <div class="sec-label">Dados Reais</div>
+    <div class="sec-title">📦 Matéria-Prima — R$ 979.204 (16,2% da receita)</div>
+  </div>
+
+  <div class="two-col equal" style="margin-bottom:20px">
+    <div class="data-card">
+      <div class="data-card-title">Top 10 Fornecedores de Matéria-Prima</div>
+      <table style="min-width:auto">
+        <thead>
+          <tr>
+            <th>Fornecedor</th>
+            <th style="text-align:right">Valor</th>
+            <th style="text-align:right">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Libero Químicos</td>
+            <td class="mono" style="text-align:right">R$ 263.781</td>
+            <td class="mono" style="text-align:right;color:var(--act)">26,9%</td>
+          </tr>
+          <tr>
+            <td>IMCD Brasil</td>
+            <td class="mono" style="text-align:right">R$ 209.456</td>
+            <td class="mono" style="text-align:right;color:var(--watch)">21,4%</td>
+          </tr>
+          <tr>
+            <td>Oswaldo Cruz Química</td>
+            <td class="mono" style="text-align:right">R$ 151.740</td>
+            <td class="mono" style="text-align:right;color:var(--watch)">15,5%</td>
+          </tr>
+          <tr>
+            <td>Adplast Industrial</td>
+            <td class="mono" style="text-align:right">R$ 72.920</td>
+            <td class="mono" style="text-align:right">7,4%</td>
+          </tr>
+          <tr>
+            <td>Acefer Tintas</td>
+            <td class="mono" style="text-align:right">R$ 57.400</td>
+            <td class="mono" style="text-align:right">5,9%</td>
+          </tr>
+          <tr>
+            <td>Momentive Performance</td>
+            <td class="mono" style="text-align:right">R$ 45.410</td>
+            <td class="mono" style="text-align:right">4,6%</td>
+          </tr>
+          <tr>
+            <td>NS Brazil Tecnologia</td>
+            <td class="mono" style="text-align:right">R$ 39.949</td>
+            <td class="mono" style="text-align:right">4,1%</td>
+          </tr>
+          <tr>
+            <td>Mineração Jundu</td>
+            <td class="mono" style="text-align:right">R$ 23.807</td>
+            <td class="mono" style="text-align:right">2,4%</td>
+          </tr>
+          <tr>
+            <td>Oxyal Itaforte</td>
+            <td class="mono" style="text-align:right">R$ 23.670</td>
+            <td class="mono" style="text-align:right">2,4%</td>
+          </tr>
+          <tr>
+            <td>Citol</td>
+            <td class="mono" style="text-align:right">R$ 21.245</td>
+            <td class="mono" style="text-align:right">2,2%</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="background:var(--ok-bg)">
+            <td><strong>TOTAL</strong></td>
+            <td class="mono" style="text-align:right"><strong>R$ 979.204</strong></td>
+            <td class="mono" style="text-align:right"><strong>100%</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="explain-card">
+      <div class="explain-headline">📅 Matéria-Prima por Mês</div>
+      <div class="explain-body" style="margin-bottom:16px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span>Dez/25</span>
+            <div style="flex:1;margin:0 12px;height:16px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+              <div style="width:95%;height:100%;background:var(--ok)"></div>
+            </div>
+            <span class="mono" style="color:var(--stone-light)">R$ 293k</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="color:var(--ok);font-weight:700">Jan/26</span>
+            <div style="flex:1;margin:0 12px;height:16px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+              <div style="width:100%;height:100%;background:var(--ok)"></div>
+            </div>
+            <span class="mono" style="color:var(--ok);font-weight:700">R$ 307k</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span>Fev/26</span>
+            <div style="flex:1;margin:0 12px;height:16px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+              <div style="width:39%;height:100%;background:var(--info)"></div>
+            </div>
+            <span class="mono" style="color:var(--stone-light)">R$ 119k</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span>Mar/26</span>
+            <div style="flex:1;margin:0 12px;height:16px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+              <div style="width:85%;height:100%;background:var(--ok)"></div>
+            </div>
+            <span class="mono" style="color:var(--stone-light)">R$ 260k</span>
+          </div>
+        </div>
+      </div>
+      <div class="explain-headline">📊 Distribuição de Destino</div>
+      <div class="explain-body">
+        <strong>Indústria Boqueirão:</strong> R$ 591k (60%)<br>
+        → Produção de microcimento<br><br>
+        <strong>Estoque Geral:</strong> R$ 321k (33%)<br>
+        → Sem projeto específico<br><br>
+        <strong>Mineral:</strong> R$ 57k (6%)<br>
+        → Produção interna<br><br>
+        <strong>Estoque SP:</strong> R$ 10k (1%)<br>
+        → Filial São Paulo
+      </div>
+      <div class="explain-alert ea-ok">
+        ✅ Custo de matéria-prima está em linha com benchmark
+      </div>
+    </div>
+  </div>
+
+  <!-- DETALHAMENTO LOGÍSTICA -->
+  <div class="sec-hdr">
+    <div class="sec-label">Detalhamento</div>
+    <div class="sec-title">🚚 Logística & Transporte por Projeto</div>
+  </div>
+
+  <div class="g2" style="margin-bottom:20px">
+    <div class="data-card">
+      <div class="data-card-title">Top 5 Projetos — Frete de Entrega</div>
+      <table style="min-width:auto">
+        <tbody>
+          <tr><td>Marcos José Veiga Gomes</td><td class="mono" style="text-align:right">R$ 16.318</td></tr>
+          <tr><td>Iolanda Odebrecht Peltier</td><td class="mono" style="text-align:right">R$ 13.550</td></tr>
+          <tr><td>Mariana Brennand Fortes</td><td class="mono" style="text-align:right">R$ 7.400</td></tr>
+          <tr><td>Vicente Paulo das Graças</td><td class="mono" style="text-align:right">R$ 6.500</td></tr>
+          <tr><td>Amendoeiras SPE</td><td class="mono" style="text-align:right">R$ 3.950</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="data-card">
+      <div class="data-card-title">Top 5 Projetos — Deslocamento</div>
+      <table style="min-width:auto">
+        <tbody>
+          <tr><td>Iolanda Odebrecht Peltier</td><td class="mono" style="text-align:right">R$ 30.204</td></tr>
+          <tr><td>João Pedro Scangatta</td><td class="mono" style="text-align:right">R$ 23.898</td></tr>
+          <tr><td>Marcos José Veiga Gomes</td><td class="mono" style="text-align:right">R$ 17.262</td></tr>
+          <tr><td>Iolanda + Mariana Brennand</td><td class="mono" style="text-align:right">R$ 14.793</td></tr>
+          <tr><td>AVVA House Mozart</td><td class="mono" style="text-align:right">R$ 6.758</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- PROJETOS VS BENCHMARK -->
+  <div class="sec-hdr">
+    <div class="sec-label">Análise por projeto</div>
+    <div class="sec-title">Top 10 Projetos — Real vs. Benchmark <span style="font-weight:400;color:var(--stone-light)">(clique para detalhes)</span></div>
+  </div>
+
+  <div class="tbl-wrap" style="margin-bottom:20px">
+    <table id="tbl-projecao">
+      <thead>
+        <tr>
+          <th>Projeto</th>
+          <th style="text-align:right">Custo Real</th>
+          <th style="text-align:right">Benchmark</th>
+          <th style="text-align:right">Diferença</th>
+          <th style="text-align:center">Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-projecao-body">
+        <!-- Preenchido via JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DRILL-DOWN DE PROJETO -->
+  <div class="op-drill-panel" id="proj-drill-panel">
+    <div class="op-drill-header">
+      <div>
+        <div class="op-drill-title" id="proj-drill-title">Detalhes do Projeto</div>
+        <div class="op-drill-subtitle" id="proj-drill-subtitle"></div>
+      </div>
+      <button class="op-drill-close" onclick="hideProjDrill()">✕</button>
+    </div>
+    <div id="proj-drill-content" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <!-- Conteúdo via JS -->
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- SIMULAÇÃO -->
+  <div class="sec-hdr">
+    <div class="sec-label">Simulação</div>
+    <div class="sec-title">Economia Potencial se Todos Seguissem o Benchmark</div>
+  </div>
+
+  <div class="two-col equal">
+    <div class="data-card">
+      <div class="data-card-title">Custo Real vs. Projetado</div>
+      <table style="min-width:auto">
+        <tbody>
+          <tr>
+            <td>Mão de Obra</td>
+            <td class="mono" style="text-align:right">R$ 992.479</td>
+            <td class="mono" style="text-align:right;color:var(--ok)">R$ 906.750</td>
+            <td class="mono" style="text-align:right;color:var(--ok)">-R$ 85.729</td>
+          </tr>
+          <tr>
+            <td>Hospedagem</td>
+            <td class="mono" style="text-align:right">R$ 268.861</td>
+            <td class="mono" style="text-align:right;color:var(--ok)">R$ 181.350</td>
+            <td class="mono" style="text-align:right;color:var(--ok)">-R$ 87.511</td>
+          </tr>
+          <tr>
+            <td>Alimentação</td>
+            <td class="mono" style="text-align:right">R$ 146.593</td>
+            <td class="mono" style="text-align:right;color:var(--stone)">R$ 90.675</td>
+            <td class="mono" style="text-align:right;color:var(--stone)">+R$ 55.918</td>
+          </tr>
+          <tr>
+            <td>Deslocamento</td>
+            <td class="mono" style="text-align:right">R$ 139.383</td>
+            <td class="mono" style="text-align:right;color:var(--ok)">R$ 90.675</td>
+            <td class="mono" style="text-align:right;color:var(--ok)">-R$ 48.708</td>
+          </tr>
+          <tr style="background:var(--gold-bg)">
+            <td><strong>TOTAL ECONOMIA</strong></td>
+            <td colspan="2"></td>
+            <td class="mono" style="text-align:right;color:var(--ok)"><strong>R$ 166.030</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="explain-card">
+      <div class="explain-headline">🎯 Impacto na Margem</div>
+      <div class="explain-body">
+        Se todos os projetos seguissem o benchmark de custos:
+        <br><br>
+        • <strong>Margem atual:</strong> 40,9%<br>
+        • <strong>Margem projetada:</strong> 43,6% (+2,7pp)<br>
+        • <strong>Ganho em R$:</strong> R$ 166k adicionais<br>
+        <br>
+        Os maiores desvios estão em <strong>Hospedagem</strong> (projetos distantes) e <strong>Deslocamento</strong>. Avaliar hotéis parceiros e otimizar rotas.
+      </div>
+      <div class="explain-alert ea-ok">
+        ✓ Meta: padronizar custos em 80% dos projetos até Jun/26
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- PROJETOS FORA DO PADRÃO -->
+  <div class="sec-hdr">
+    <div class="sec-label">Alertas</div>
+    <div class="sec-title">Projetos Acima do Benchmark (Investigar)</div>
+  </div>
+
+  <div class="g2">
+    <div class="risk-card" style="cursor:default">
+      <div class="risk-header">
+        <div class="risk-title">🏨 Hotel Acima do Benchmark</div>
+        <div class="risk-value act">5</div>
+      </div>
+      <div class="risk-detail">projetos com hospedagem >R$10k</div>
+      <div style="margin-top:12px;font-size:11px;color:var(--stone-light)">
+        Carolina Rache (R$61k), Gustavo Pereira (R$39k), Iolanda Odebrecht (R$28k), Amendoeiras (R$22k), Marcos Veiga (R$15k)
+      </div>
+    </div>
+    <div class="risk-card warning" style="cursor:default">
+      <div class="risk-header">
+        <div class="risk-title">🚗 Deslocamento Acima do Benchmark</div>
+        <div class="risk-value watch">3</div>
+      </div>
+      <div class="risk-detail">projetos com deslocamento >R$10k</div>
+      <div style="margin-top:12px;font-size:11px;color:var(--stone-light)">
+        Iolanda Odebrecht (R$30k), João Pedro Scangatta (R$24k), Marcos Veiga (R$17k)
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TAB 5 — DEVOLUÇÕES & PREJUÍZOS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-devolucoes">
+
+  <!-- ALERTA CRÍTICO -->
+  <div class="alert-box" style="background:#FDE8E8;border-color:#E8A8A8;margin-bottom:20px">
+    <div class="alert-icon">🚨</div>
+    <div class="alert-content">
+      <div class="alert-title" style="color:#8B2020">Atenção: R$ 389k em Devoluções e Prejuízos (6,4% da receita)</div>
+      <div class="alert-text">
+        Esta aba consolida <strong>devoluções de vendas</strong> (R$ 361.803) e <strong>outros custos específicos de obra</strong> (R$ 27.636) 
+        que representam perdas operacionais. O caso <strong>TGSJ Empreendimentos</strong> sozinho representa R$ 120k (33% das devoluções).
+      </div>
+    </div>
+  </div>
+
+  <div class="exec-banner" style="border-left-color:var(--act)">
+    <div style="flex:2;min-width:240px">
+      <div class="exec-title" style="color:var(--act)">📉 Análise de Perdas Operacionais</div>
+      <p class="exec-text">
+        Devoluções e prejuízos impactam diretamente a margem. 
+        <strong style="color:var(--white)">Cada 1% de devolução = R$ 60k a menos no caixa.</strong>
+        Investigar causas raiz pode recuperar margem significativa.
+      </p>
+    </div>
+    <div class="exec-div"></div>
+    <div class="exec-nums">
+      <div class="exec-num">
+        <div class="exec-nl">Devoluções</div>
+        <div class="exec-nv" style="color:var(--act)">R$ 362k</div>
+        <div class="exec-ns">5,98% da receita</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Prejuízos Obra</div>
+        <div class="exec-nv" style="color:var(--watch)">R$ 28k</div>
+        <div class="exec-ns">danos/indenizações</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Indenizações</div>
+        <div class="exec-nv" style="color:var(--watch)">R$ 62k</div>
+        <div class="exec-ns">bens de clientes</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- DEVOLUÇÕES DE VENDAS -->
+  <div class="sec-hdr">
+    <div class="sec-label">Análise crítica</div>
+    <div class="sec-title">Devoluções de Vendas — R$ 361.803 (27 ocorrências)</div>
+  </div>
+
+  <div class="two-col equal" style="margin-bottom:20px">
+    <div class="data-card">
+      <div class="data-card-title">Top 10 Devoluções</div>
+      <table style="min-width:auto">
+        <thead>
+          <tr>
+            <th>Projeto</th>
+            <th style="text-align:center">Mês</th>
+            <th style="text-align:right">Valor</th>
+            <th style="text-align:right">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:var(--act-bg)">
+            <td><strong>🚨 TGSJ Empreendimentos</strong></td>
+            <td style="text-align:center"><span class="sbadge sb-act">Dez-Jan</span></td>
+            <td class="mono" style="text-align:right;color:var(--act)">R$ 119.901</td>
+            <td class="mono" style="text-align:right">33,1%</td>
+          </tr>
+          <tr>
+            <td>Marcel Stefani Bonzo</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Dez/25</span></td>
+            <td class="mono" style="text-align:right">R$ 46.846</td>
+            <td class="mono" style="text-align:right">12,9%</td>
+          </tr>
+          <tr>
+            <td>Alinie Mendes Peigo</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Fev/26</span></td>
+            <td class="mono" style="text-align:right">R$ 46.618</td>
+            <td class="mono" style="text-align:right">12,9%</td>
+          </tr>
+          <tr>
+            <td>Gabriela Guarita Dirani</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan/26</span></td>
+            <td class="mono" style="text-align:right">R$ 40.077</td>
+            <td class="mono" style="text-align:right">11,1%</td>
+          </tr>
+          <tr>
+            <td>Patrick Petry</td>
+            <td style="text-align:center"><span class="sbadge sb-watch">Fev-Mar</span></td>
+            <td class="mono" style="text-align:right">R$ 40.000</td>
+            <td class="mono" style="text-align:right">11,1%</td>
+          </tr>
+          <tr>
+            <td>Flavia Augusta de Assis</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Mar/26</span></td>
+            <td class="mono" style="text-align:right">R$ 22.958</td>
+            <td class="mono" style="text-align:right">6,3%</td>
+          </tr>
+          <tr>
+            <td>R3 - PR</td>
+            <td style="text-align:center"><span class="sbadge sb-watch">Dez-Mar</span></td>
+            <td class="mono" style="text-align:right">R$ 21.446</td>
+            <td class="mono" style="text-align:right">5,9%</td>
+          </tr>
+          <tr>
+            <td>Pedro Sonego de Oliveira</td>
+            <td style="text-align:center"><span class="sbadge sb-watch">Dez-Fev</span></td>
+            <td class="mono" style="text-align:right">R$ 12.248</td>
+            <td class="mono" style="text-align:right">3,4%</td>
+          </tr>
+          <tr>
+            <td>Pedro Mendes de Souza</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Dez/25</span></td>
+            <td class="mono" style="text-align:right">R$ 6.046</td>
+            <td class="mono" style="text-align:right">1,7%</td>
+          </tr>
+          <tr>
+            <td>Tamar Messer</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Dez/25</span></td>
+            <td class="mono" style="text-align:right">R$ 3.549</td>
+            <td class="mono" style="text-align:right">1,0%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="explain-card">
+      <div class="explain-headline">📅 Devoluções por Mês</div>
+      <div class="explain-body" style="margin-bottom:16px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span>Dez/25</span>
+            <div style="flex:1;margin:0 12px;height:16px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+              <div style="width:38%;height:100%;background:var(--act)"></div>
+            </div>
+            <span class="mono" style="color:var(--stone-light)">R$ 66k</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="color:var(--act);font-weight:700">Jan/26</span>
+            <div style="flex:1;margin:0 12px;height:16px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+              <div style="width:100%;height:100%;background:var(--act)"></div>
+            </div>
+            <span class="mono" style="color:var(--act);font-weight:700">R$ 170k</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span>Fev/26</span>
+            <div style="flex:1;margin:0 12px;height:16px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+              <div style="width:45%;height:100%;background:var(--watch)"></div>
+            </div>
+            <span class="mono" style="color:var(--stone-light)">R$ 77k</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span>Mar/26</span>
+            <div style="flex:1;margin:0 12px;height:16px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+              <div style="width:28%;height:100%;background:var(--ok)"></div>
+            </div>
+            <span class="mono" style="color:var(--stone-light)">R$ 48k</span>
+          </div>
+        </div>
+      </div>
+      <div class="explain-headline">🔍 Caso TGSJ Empreendimentos</div>
+      <div class="explain-body">
+        Este caso representa <strong>33% de todas as devoluções</strong>.
+        Pagamentos ocorreram em <strong>Dez/25 e Jan/26</strong>.
+        <br><br>
+        <strong>Valor:</strong> R$ 119.900,79<br>
+        <strong>Impacto na margem:</strong> -2pp direto
+      </div>
+      <div class="explain-alert ea-act">
+        🎯 Ação URGENTE: Levantar histórico completo do caso TGSJ
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- OUTROS CUSTOS ESPECÍFICOS DE OBRA -->
+  <div class="sec-hdr">
+    <div class="sec-label">Prejuízos operacionais</div>
+    <div class="sec-title">Outros Custos Específicos de Obra — R$ 27.636 (danos/reparos)</div>
+  </div>
+
+  <div class="alert-box info" style="margin-bottom:20px">
+    <div class="alert-icon">💡</div>
+    <div class="alert-content">
+      <div class="alert-title">O que são esses custos?</div>
+      <div class="alert-text">
+        São despesas não previstas que surgem durante a obra: <strong>danos a móveis/piso do cliente</strong>, 
+        <strong>reparos emergenciais</strong>, <strong>materiais extras por erro</strong>, <strong>limpeza especial</strong>.
+        Quanto menor, melhor a qualidade da execução.
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col equal" style="margin-bottom:20px">
+    <div class="data-card">
+      <div class="data-card-title">Projetos com Outros Custos (Danos/Reparos)</div>
+      <table style="min-width:auto">
+        <thead>
+          <tr>
+            <th>Projeto</th>
+            <th style="text-align:center">Mês</th>
+            <th style="text-align:right">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Iolanda Odebrecht Peltier</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan-Fev</span></td>
+            <td class="mono" style="text-align:right">R$ 5.056</td>
+          </tr>
+          <tr>
+            <td>Alvaro Gonçalves Landi</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan/26</span></td>
+            <td class="mono" style="text-align:right">R$ 3.950</td>
+          </tr>
+          <tr>
+            <td>Paula Waldvogel Otero</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan/26</span></td>
+            <td class="mono" style="text-align:right">R$ 3.740</td>
+          </tr>
+          <tr>
+            <td>Gustavo de Souza Pereira</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan/26</span></td>
+            <td class="mono" style="text-align:right">R$ 3.647</td>
+          </tr>
+          <tr>
+            <td>Marisa Natália Pinto</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan/26</span></td>
+            <td class="mono" style="text-align:right">R$ 3.000</td>
+          </tr>
+          <tr>
+            <td>Paula Clerman Bobrow</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Dez/25</span></td>
+            <td class="mono" style="text-align:right">R$ 2.839</td>
+          </tr>
+          <tr>
+            <td>Amilcar Armando Oliveira</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan/26</span></td>
+            <td class="mono" style="text-align:right">R$ 1.990</td>
+          </tr>
+          <tr>
+            <td>Livia Ribeiro Vieira</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Fev/26</span></td>
+            <td class="mono" style="text-align:right">R$ 1.200</td>
+          </tr>
+          <tr>
+            <td>AVVA House Mozart</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Fev-Mar</span></td>
+            <td class="mono" style="text-align:right">R$ 770</td>
+          </tr>
+          <tr>
+            <td>Outros (5 projetos)</td>
+            <td style="text-align:center">—</td>
+            <td class="mono" style="text-align:right">R$ 1.444</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="data-card">
+      <div class="data-card-title">Indenizações/Manutenções Bens de Clientes</div>
+      <p style="font-size:12px;color:var(--stone);margin-bottom:12px">
+        Danos diretos a bens dos clientes (móveis, pisos existentes, etc.)
+      </p>
+      <table style="min-width:auto">
+        <thead>
+          <tr>
+            <th>Projeto</th>
+            <th style="text-align:center">Mês</th>
+            <th style="text-align:right">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rodolfo R. Vasconcellos Jr.</td>
+            <td style="text-align:center"><span class="sbadge sb-watch">Dez-Mar</span></td>
+            <td class="mono" style="text-align:right">R$ 20.000</td>
+          </tr>
+          <tr>
+            <td>Rodolfo Natividade Torello</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan/26</span></td>
+            <td class="mono" style="text-align:right">R$ 7.652</td>
+          </tr>
+          <tr>
+            <td>Paula Waldvogel Otero</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan-Mar</span></td>
+            <td class="mono" style="text-align:right">R$ 7.000</td>
+          </tr>
+          <tr>
+            <td>Andre Keunecke Salerno</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan-Mar</span></td>
+            <td class="mono" style="text-align:right">R$ 4.881</td>
+          </tr>
+          <tr>
+            <td>Renato Eid Tucci</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Mar/26</span></td>
+            <td class="mono" style="text-align:right">R$ 4.860</td>
+          </tr>
+          <tr>
+            <td>Marisa Natália Pinto</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Jan/26</span></td>
+            <td class="mono" style="text-align:right">R$ 3.455</td>
+          </tr>
+          <tr>
+            <td>Livia Ribeiro Vieira</td>
+            <td style="text-align:center"><span class="sbadge sb-info">Dez-Jan</span></td>
+            <td class="mono" style="text-align:right">R$ 2.950</td>
+          </tr>
+          <tr>
+            <td>Outros (6 projetos)</td>
+            <td style="text-align:center">—</td>
+            <td class="mono" style="text-align:right">R$ 11.685</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="background:var(--watch-bg)">
+            <td colspan="2"><strong>TOTAL</strong></td>
+            <td class="mono" style="text-align:right"><strong>R$ 62.483</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- RESUMO E AÇÕES -->
+  <div class="sec-hdr">
+    <div class="sec-label">Consolidado</div>
+    <div class="sec-title">Impacto Total na Margem</div>
+  </div>
+
+  <div class="two-col equal">
+    <div class="data-card">
+      <div class="data-card-title">Perdas por Categoria</div>
+      <table style="min-width:auto">
+        <tbody>
+          <tr>
+            <td>Devoluções de Vendas</td>
+            <td class="mono" style="text-align:right">R$ 361.803</td>
+            <td class="mono" style="text-align:right;color:var(--act)">5,98%</td>
+          </tr>
+          <tr>
+            <td>Indenizações/Manutenções</td>
+            <td class="mono" style="text-align:right">R$ 62.483</td>
+            <td class="mono" style="text-align:right;color:var(--watch)">1,03%</td>
+          </tr>
+          <tr>
+            <td>Outros Custos de Obra</td>
+            <td class="mono" style="text-align:right">R$ 27.636</td>
+            <td class="mono" style="text-align:right;color:var(--watch)">0,46%</td>
+          </tr>
+          <tr style="background:var(--act-bg)">
+            <td><strong>TOTAL PERDAS</strong></td>
+            <td class="mono" style="text-align:right"><strong>R$ 451.922</strong></td>
+            <td class="mono" style="text-align:right;color:var(--act)"><strong>7,47%</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px;padding:12px;background:var(--gold-bg);border-radius:6px">
+        <div style="font-size:12px;color:var(--concrete)">
+          <strong>Se reduzir perdas em 50%:</strong><br>
+          Economia de R$ 226k → Margem sobe 3,7pp
+        </div>
+      </div>
+    </div>
+    <div class="explain-card">
+      <div class="explain-headline">📋 Plano de Ação</div>
+      <div class="explain-body">
+        <strong>Imediato (esta semana):</strong><br>
+        • Investigar caso TGSJ Empreendimentos (R$ 120k)<br>
+        • Revisar contrato e histórico de comunicação<br>
+        <br>
+        <strong>Curto prazo (30 dias):</strong><br>
+        • Analisar top 5 devoluções (R$ 294k = 81%)<br>
+        • Identificar padrões (região? equipe? tipo obra?)<br>
+        <br>
+        <strong>Processo contínuo:</strong><br>
+        • Checklist de proteção de bens do cliente<br>
+        • Registro fotográfico pré/pós obra<br>
+        • Meta: reduzir perdas para menos de 3%
+      </div>
+      <div class="explain-alert ea-act">
+        🎯 Meta: Perdas < 3% da receita até Set/26
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TAB 6 — EVOLUÇÃO MENSAL
+══════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-evolucao">
+
+  <div class="exec-banner" style="border-left-color:var(--ok)">
+    <div style="flex:2;min-width:240px">
+      <div class="exec-title" style="color:var(--ok)">📈 Evolução Financeira — Dez/25 a Mar/26</div>
+      <p class="exec-text">
+        Análise de tendências com projeção linear. 
+        <strong style="color:var(--white)">Receita cresceu 12% no período</strong> enquanto 
+        <strong style="color:var(--ok)">MATA-METRO caiu 96%</strong>.
+        Margem bruta subiu de 38,5% para 44,2%.
+      </p>
+    </div>
+    <div class="exec-div"></div>
+    <div class="exec-nums">
+      <div class="exec-num">
+        <div class="exec-nl">Receita Total</div>
+        <div class="exec-nv" style="color:var(--gold)">R$ 6,05M</div>
+        <div class="exec-ns">4 meses</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Crescimento</div>
+        <div class="exec-nv" style="color:var(--ok)">+12%</div>
+        <div class="exec-ns">Dez→Mar</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Margem Atual</div>
+        <div class="exec-nv" style="color:var(--ok)">44,2%</div>
+        <div class="exec-ns">Mar/26</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- GRÁFICO DE LINHAS PROFISSIONAL -->
+  <div class="sec-hdr">
+    <div class="sec-label">Tendências</div>
+    <div class="sec-title">Gráfico de Evolução com Linhas de Tendência</div>
+  </div>
+
+  <div class="data-card" style="margin-bottom:20px">
+    <div class="data-card-title">Receita, Margem e MATA-METRO — Evolução Mensal</div>
+    <div style="position:relative;height:320px;padding:20px 40px 40px 60px">
+      <!-- Grid de fundo -->
+      <svg width="100%" height="100%" style="position:absolute;left:0;top:0">
+        <!-- Linhas horizontais do grid -->
+        <line x1="60" y1="40" x2="calc(100% - 40px)" y2="40" stroke="var(--border)" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="60" y1="100" x2="calc(100% - 40px)" y2="100" stroke="var(--border)" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="60" y1="160" x2="calc(100% - 40px)" y2="160" stroke="var(--border)" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="60" y1="220" x2="calc(100% - 40px)" y2="220" stroke="var(--border)" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="60" y1="280" x2="calc(100% - 40px)" y2="280" stroke="var(--border)" stroke-width="1"/>
+        
+        <!-- Labels Y -->
+        <text x="55" y="45" text-anchor="end" fill="var(--stone)" style="font-size:11px">R$ 2M</text>
+        <text x="55" y="105" text-anchor="end" fill="var(--stone)" style="font-size:11px">R$ 1,5M</text>
+        <text x="55" y="165" text-anchor="end" fill="var(--stone)" style="font-size:11px">R$ 1M</text>
+        <text x="55" y="225" text-anchor="end" fill="var(--stone)" style="font-size:11px">R$ 500k</text>
+        <text x="55" y="285" text-anchor="end" fill="var(--stone)" style="font-size:11px">R$ 0</text>
+      </svg>
+      
+      <!-- Canvas do gráfico -->
+      <div id="evolution-chart" style="position:relative;height:100%;display:flex;align-items:flex-end;justify-content:space-around;padding-bottom:30px">
+        <!-- Barras e pontos inseridos via JS -->
+      </div>
+    </div>
+    
+    <!-- Legenda -->
+    <div style="display:flex;gap:24px;justify-content:center;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:4px;background:var(--gold);border-radius:2px"></div>
+        <span style="font-size:12px">Receita</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:4px;background:var(--ok);border-radius:2px"></div>
+        <span style="font-size:12px">Margem Bruta</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:4px;background:var(--act);border-radius:2px"></div>
+        <span style="font-size:12px">MATA-METRO</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:4px;background:var(--info);border-radius:2px;opacity:0.5"></div>
+        <span style="font-size:12px;color:var(--stone)">Projeção (tendência)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS DE MÉTRICAS -->
+  <div class="g4" style="margin-bottom:20px">
+    <div class="data-card" style="text-align:center">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:4px">RECEITA</div>
+      <div style="font-size:28px;font-weight:700;color:var(--gold)">+12%</div>
+      <div style="font-size:11px;color:var(--ok)">↑ R$ 183k vs Dez</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--stone)">Projeção Abr/26</div>
+        <div style="font-size:14px;font-weight:600;color:var(--gold)">R$ 1,85M</div>
+      </div>
+    </div>
+    <div class="data-card" style="text-align:center">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:4px">MARGEM</div>
+      <div style="font-size:28px;font-weight:700;color:var(--ok)">+5,7pp</div>
+      <div style="font-size:11px;color:var(--ok)">↑ 38,5% → 44,2%</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--stone)">Projeção Abr/26</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ok)">46,5%</div>
+      </div>
+    </div>
+    <div class="data-card" style="text-align:center">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:4px">MATA-METRO</div>
+      <div style="font-size:28px;font-weight:700;color:var(--ok)">-96%</div>
+      <div style="font-size:11px;color:var(--ok)">↓ 26,2% → 0,97%</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--stone)">Projeção Abr/26</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ok)">0,5%</div>
+      </div>
+    </div>
+    <div class="data-card" style="text-align:center">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:4px">MO DIRETA</div>
+      <div style="font-size:28px;font-weight:700;color:var(--info)">+493%</div>
+      <div style="font-size:11px;color:var(--info)">↑ R$ 86k → R$ 512k</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--stone)">Transferência pool→projeto</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ok)">✓ Saudável</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- VISUALIZAÇÃO DA MARGEM COM MATA-METRO -->
+  <div class="sec-hdr">
+    <div class="sec-label">Composição</div>
+    <div class="sec-title">Impacto do MATA-METRO na Margem por Mês</div>
+  </div>
+
+  <div class="data-card" style="margin-bottom:20px">
+    <div class="data-card-title">Waterfall: Como o MATA-METRO consumia a margem</div>
+    
+    <div style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-weight:600">Dez/25</span>
+        <span class="mono" style="display:flex;align-items:center;gap:8px">
+          <span style="color:var(--stone-light)">Receita: R$ 1,56M</span>
+          <span style="color:var(--ok)">Margem: 38,5%</span>
+        </span>
+      </div>
+      <div class="margin-bar" id="bar-dez">
+        <div class="margin-seg" style="width:38.5%;background:var(--ok)" data-tip="Margem Bruta|R$ 600k|38,5%">
+          <span style="font-size:11px;font-weight:600">38,5%</span>
+        </div>
+        <div class="margin-seg" style="width:26.2%;background:var(--act)" data-tip="MATA-METRO|R$ 409k|26,2% da receita">
+          <span style="font-size:11px;font-weight:600">26,2%</span>
+        </div>
+        <div class="margin-seg" style="width:35.3%;background:var(--stone)" data-tip="Outros Custos|R$ 549k|35,3%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--act);display:flex;align-items:center;gap:4px">
+        <span>⚠️</span> MATA-METRO consumiu 26,2% da receita deste mês
+      </div>
+    </div>
+
+    <div style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-weight:600">Jan/26</span>
+        <span class="mono" style="display:flex;align-items:center;gap:8px">
+          <span style="color:var(--stone-light)">Receita: R$ 1,42M</span>
+          <span style="color:var(--ok)">Margem: 38,2%</span>
+        </span>
+      </div>
+      <div class="margin-bar">
+        <div class="margin-seg" style="width:38.2%;background:var(--ok)" data-tip="Margem Bruta|R$ 542k|38,2%">
+          <span style="font-size:11px;font-weight:600">38,2%</span>
+        </div>
+        <div class="margin-seg" style="width:47.2%;background:var(--act)" data-tip="MATA-METRO|R$ 669k|47,2% da receita">
+          <span style="font-size:11px;font-weight:600">47,2%</span>
+        </div>
+        <div class="margin-seg" style="width:14.6%;background:var(--stone)" data-tip="Outros Custos|R$ 207k|14,6%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--act);display:flex;align-items:center;gap:4px">
+        <span>🚨</span> <strong>PICO CRÍTICO:</strong> MATA-METRO consumiu 47,2% da receita!
+      </div>
+    </div>
+
+    <div style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-weight:600">Fev/26</span>
+        <span class="mono" style="display:flex;align-items:center;gap:8px">
+          <span style="color:var(--stone-light)">Receita: R$ 1,33M</span>
+          <span style="color:var(--ok)">Margem: 41,8%</span>
+        </span>
+      </div>
+      <div class="margin-bar">
+        <div class="margin-seg" style="width:41.8%;background:var(--ok)" data-tip="Margem Bruta|R$ 556k|41,8%">
+          <span style="font-size:11px;font-weight:600">41,8%</span>
+        </div>
+        <div class="margin-seg" style="width:6.4%;background:var(--watch)" data-tip="MATA-METRO|R$ 85k|6,4% da receita"></div>
+        <div class="margin-seg" style="width:51.8%;background:var(--stone)" data-tip="Outros Custos|R$ 689k|51,8%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--ok);display:flex;align-items:center;gap:4px">
+        <span>✓</span> MATA-METRO caiu para 6,4% — melhoria de -40,8pp
+      </div>
+    </div>
+
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-weight:600">Mar/26</span>
+        <span class="mono" style="display:flex;align-items:center;gap:8px">
+          <span style="color:var(--stone-light)">Receita: R$ 1,74M</span>
+          <span style="color:var(--ok);font-weight:700">Margem: 44,2%</span>
+        </span>
+      </div>
+      <div class="margin-bar">
+        <div class="margin-seg" style="width:44.2%;background:var(--ok)" data-tip="Margem Bruta|R$ 770k|44,2%">
+          <span style="font-size:11px;font-weight:600">44,2%</span>
+        </div>
+        <div class="margin-seg" style="width:0.97%;background:var(--ok-bd)" data-tip="MATA-METRO|R$ 17k|0,97% da receita"></div>
+        <div class="margin-seg" style="width:54.83%;background:var(--stone)" data-tip="Outros Custos|R$ 954k|54,8%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--ok);display:flex;align-items:center;gap:4px">
+        <span>✅</span> MATA-METRO em 0,97% — <strong>praticamente eliminado!</strong>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;background:var(--ok);border-radius:2px"></div><span style="font-size:11px">Margem</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;background:var(--act);border-radius:2px"></div><span style="font-size:11px">MATA-METRO</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;background:var(--stone);border-radius:2px"></div><span style="font-size:11px">Outros Custos</span></div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- TABELA DETALHADA -->
+  <div class="sec-hdr">
+    <div class="sec-label">Dados</div>
+    <div class="sec-title">Valores Mensais Detalhados</div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Mês</th>
+          <th style="text-align:right">Receita</th>
+          <th style="text-align:right">Var %</th>
+          <th style="text-align:right">MATA-METRO</th>
+          <th style="text-align:right">% Receita</th>
+          <th style="text-align:right">MO Direta</th>
+          <th style="text-align:right">Mat-Prima</th>
+          <th style="text-align:right">Margem</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Dez/25</strong></td>
+          <td class="mono" style="text-align:right">R$ 1.557.734</td>
+          <td class="mono" style="text-align:right;color:var(--stone)">—</td>
+          <td class="mono" style="text-align:right;color:var(--act)">R$ 408.773</td>
+          <td class="mono" style="text-align:right;color:var(--act)">26,24%</td>
+          <td class="mono" style="text-align:right">R$ 86.409</td>
+          <td class="mono" style="text-align:right">R$ 292.552</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">38,5%</td>
+        </tr>
+        <tr>
+          <td><strong>Jan/26</strong></td>
+          <td class="mono" style="text-align:right">R$ 1.418.295</td>
+          <td class="mono" style="text-align:right;color:var(--act)">-8,9%</td>
+          <td class="mono" style="text-align:right;color:var(--act)">R$ 668.674</td>
+          <td class="mono" style="text-align:right;color:var(--act)">47,15%</td>
+          <td class="mono" style="text-align:right">R$ 50.008</td>
+          <td class="mono" style="text-align:right">R$ 307.063</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">38,2%</td>
+        </tr>
+        <tr>
+          <td><strong>Fev/26</strong></td>
+          <td class="mono" style="text-align:right">R$ 1.330.272</td>
+          <td class="mono" style="text-align:right;color:var(--act)">-6,2%</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">R$ 85.152</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">6,40%</td>
+          <td class="mono" style="text-align:right">R$ 344.427</td>
+          <td class="mono" style="text-align:right">R$ 119.133</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">41,8%</td>
+        </tr>
+        <tr>
+          <td><strong>Mar/26</strong></td>
+          <td class="mono" style="text-align:right">R$ 1.740.781</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">+30,8%</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">R$ 16.924</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">0,97%</td>
+          <td class="mono" style="text-align:right">R$ 511.635</td>
+          <td class="mono" style="text-align:right">R$ 260.456</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">44,2%</td>
+        </tr>
+        <tr style="background:var(--gold-bg)">
+          <td><strong>TOTAL</strong></td>
+          <td class="mono" style="text-align:right"><strong>R$ 6.047.081</strong></td>
+          <td class="mono" style="text-align:right;color:var(--ok)"><strong>+12%</strong></td>
+          <td class="mono" style="text-align:right"><strong>R$ 1.179.524</strong></td>
+          <td class="mono" style="text-align:right"><strong>19,51%</strong></td>
+          <td class="mono" style="text-align:right"><strong>R$ 992.479</strong></td>
+          <td class="mono" style="text-align:right"><strong>R$ 979.204</strong></td>
+          <td class="mono" style="text-align:right;color:var(--ok)"><strong>40,9%</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TAB 7 — TABELA RESUMO
+══════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-tabela">
+
+  <!-- HEADER EXECUTIVO -->
+  <div class="exec-banner" style="border-left-color:var(--gold);margin-bottom:20px">
+    <div style="flex:2;min-width:240px">
+      <div class="exec-title" style="color:var(--gold)">📋 Resumo Executivo — Dez/25 a Mar/26</div>
+      <p class="exec-text">
+        Visão consolidada de todos os indicadores financeiros e operacionais.
+        <strong style="color:var(--white)">Margem bruta de 40,9%</strong> com tendência de alta.
+        Principais oportunidades de melhoria identificadas abaixo.
+      </p>
+    </div>
+    <div class="exec-div"></div>
+    <div class="exec-nums">
+      <div class="exec-num">
+        <div class="exec-nl">Receita</div>
+        <div class="exec-nv" style="color:var(--gold)">R$ 6,05M</div>
+        <div class="exec-ns">faturada</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Custo Total</div>
+        <div class="exec-nv" style="color:var(--watch)">R$ 4,91M</div>
+        <div class="exec-ns">operacional</div>
+      </div>
+      <div class="exec-num">
+        <div class="exec-nl">Margem</div>
+        <div class="exec-nv" style="color:var(--ok)">40,9%</div>
+        <div class="exec-ns">bruta</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRE VISUAL -->
+  <div class="sec-hdr">
+    <div class="sec-label">DRE Simplificado</div>
+    <div class="sec-title">Demonstração de Resultado do Período</div>
+  </div>
+
+  <div class="data-card" style="margin-bottom:20px">
+    <div style="max-width:600px;margin:0 auto">
+      <!-- Receita Bruta -->
+      <div style="display:flex;align-items:center;margin-bottom:12px">
+        <div style="width:200px;font-weight:600">Receita Bruta</div>
+        <div style="flex:1;height:32px;background:var(--gold);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px">
+          <span style="color:white;font-weight:700;font-family:var(--font-mono)">R$ 6.047.081</span>
+        </div>
+        <div style="width:60px;text-align:right;font-size:12px;color:var(--stone)">100%</div>
+      </div>
+      
+      <!-- Devoluções -->
+      <div style="display:flex;align-items:center;margin-bottom:12px;padding-left:20px">
+        <div style="width:180px;color:var(--act)">(-) Devoluções</div>
+        <div style="flex:1;height:24px;background:var(--act);border-radius:4px;display:flex;align-items:center;padding-left:12px;opacity:0.7" style="max-width:6%">
+          <span style="color:white;font-size:12px;font-family:var(--font-mono)">R$ 361.803</span>
+        </div>
+        <div style="width:60px;text-align:right;font-size:12px;color:var(--act)">-6,0%</div>
+      </div>
+      
+      <!-- Receita Líquida -->
+      <div style="display:flex;align-items:center;margin-bottom:12px;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+        <div style="width:200px;font-weight:600">= Receita Líquida</div>
+        <div style="flex:1;height:28px;background:var(--gold-bg);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px">
+          <span style="color:var(--gold);font-weight:700;font-family:var(--font-mono)">R$ 5.685.278</span>
+        </div>
+        <div style="width:60px;text-align:right;font-size:12px;color:var(--stone)">94%</div>
+      </div>
+      
+      <!-- Custos -->
+      <div style="display:flex;align-items:center;margin-bottom:8px;padding-left:20px">
+        <div style="width:180px;color:var(--stone)">(-) Matéria-Prima</div>
+        <div style="flex:1;display:flex;align-items:center">
+          <div style="width:16%;height:20px;background:#2D5A4A;border-radius:4px"></div>
+          <span style="margin-left:8px;font-size:11px;font-family:var(--font-mono)">R$ 979k</span>
+        </div>
+        <div style="width:60px;text-align:right;font-size:12px;color:var(--stone)">16,2%</div>
+      </div>
+      
+      <div style="display:flex;align-items:center;margin-bottom:8px;padding-left:20px">
+        <div style="width:180px;color:var(--stone)">(-) MATA-METRO</div>
+        <div style="flex:1;display:flex;align-items:center">
+          <div style="width:19.5%;height:20px;background:var(--act);border-radius:4px"></div>
+          <span style="margin-left:8px;font-size:11px;font-family:var(--font-mono)">R$ 1.180k</span>
+        </div>
+        <div style="width:60px;text-align:right;font-size:12px;color:var(--act)">19,5%</div>
+      </div>
+      
+      <div style="display:flex;align-items:center;margin-bottom:8px;padding-left:20px">
+        <div style="width:180px;color:var(--stone)">(-) MO Direta</div>
+        <div style="flex:1;display:flex;align-items:center">
+          <div style="width:16.4%;height:20px;background:var(--ok);border-radius:4px"></div>
+          <span style="margin-left:8px;font-size:11px;font-family:var(--font-mono)">R$ 992k</span>
+        </div>
+        <div style="width:60px;text-align:right;font-size:12px;color:var(--stone)">16,4%</div>
+      </div>
+      
+      <div style="display:flex;align-items:center;margin-bottom:12px;padding-left:20px">
+        <div style="width:180px;color:var(--stone)">(-) Outros custos</div>
+        <div style="flex:1;display:flex;align-items:center">
+          <div style="width:29%;height:20px;background:var(--stone);border-radius:4px"></div>
+          <span style="margin-left:8px;font-size:11px;font-family:var(--font-mono)">R$ 1.760k</span>
+        </div>
+        <div style="width:60px;text-align:right;font-size:12px;color:var(--stone)">29,1%</div>
+      </div>
+      
+      <!-- Margem Bruta -->
+      <div style="display:flex;align-items:center;padding:12px 0;border-top:2px solid var(--ok);margin-top:8px">
+        <div style="width:200px;font-weight:700;color:var(--ok)">= MARGEM BRUTA</div>
+        <div style="flex:1;height:36px;background:var(--ok);border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px">
+          <span style="color:white;font-weight:700;font-size:16px;font-family:var(--font-mono)">R$ 2.474.574</span>
+        </div>
+        <div style="width:60px;text-align:right;font-weight:700;color:var(--ok)">40,9%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- QUADRO COMPARATIVO DE IMPACTO FINANCEIRO -->
+  <div class="sec-hdr">
+    <div class="sec-label">Simulação</div>
+    <div class="sec-title">💰 Impacto Financeiro — Se Reduzirmos Custos</div>
+  </div>
+
+  <div class="alert-box info" style="margin-bottom:20px">
+    <div class="alert-icon">🎯</div>
+    <div class="alert-content">
+      <div class="alert-title">Como funciona essa simulação?</div>
+      <div class="alert-text">
+        Calculamos quanto a empresa <strong>ganharia de margem adicional</strong> se reduzir cada categoria de custo em direção ao benchmark saudável.
+        Os valores são projetados para os próximos 4 meses mantendo a mesma receita média de R$ 1,5M/mês.
+      </div>
+    </div>
+  </div>
+
+  <div class="data-card" style="margin-bottom:20px">
+    <div class="data-card-title">Cenários de Otimização — Impacto no Lucro</div>
+    <table style="min-width:auto">
+      <thead>
+        <tr>
+          <th>Cenário</th>
+          <th style="text-align:center">Atual</th>
+          <th style="text-align:center">Meta</th>
+          <th style="text-align:center">Redução</th>
+          <th style="text-align:right">Economia/4 meses</th>
+          <th style="text-align:right">+Margem</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:var(--ok-bg)">
+          <td><strong>🏆 MATA-METRO → Alocado</strong></td>
+          <td class="mono" style="text-align:center">19,5%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">5%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">-14,5pp</td>
+          <td class="mono" style="text-align:right;color:var(--ok)"><strong>R$ 877k</strong></td>
+          <td class="mono" style="text-align:right;color:var(--ok)"><strong>+14,5pp</strong></td>
+        </tr>
+        <tr>
+          <td>📦 Hospedagem</td>
+          <td class="mono" style="text-align:center">4,5%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">3%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">-1,5pp</td>
+          <td class="mono" style="text-align:right">R$ 91k</td>
+          <td class="mono" style="text-align:right">+1,5pp</td>
+        </tr>
+        <tr>
+          <td>🚚 Logística</td>
+          <td class="mono" style="text-align:center">6,5%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">5%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">-1,5pp</td>
+          <td class="mono" style="text-align:right">R$ 91k</td>
+          <td class="mono" style="text-align:right">+1,5pp</td>
+        </tr>
+        <tr>
+          <td>🍽️ Alimentação</td>
+          <td class="mono" style="text-align:center">2,4%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">1,5%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">-0,9pp</td>
+          <td class="mono" style="text-align:right">R$ 54k</td>
+          <td class="mono" style="text-align:right">+0,9pp</td>
+        </tr>
+        <tr>
+          <td>🚨 Devoluções</td>
+          <td class="mono" style="text-align:center">6,0%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">2%</td>
+          <td class="mono" style="text-align:center;color:var(--ok)">-4pp</td>
+          <td class="mono" style="text-align:right">R$ 242k</td>
+          <td class="mono" style="text-align:right">+4pp</td>
+        </tr>
+        <tr style="background:var(--gold-bg);font-weight:700">
+          <td>🎯 TOTAL POTENCIAL</td>
+          <td colspan="2"></td>
+          <td class="mono" style="text-align:center;color:var(--ok)">-22,4pp</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">R$ 1.355k</td>
+          <td class="mono" style="text-align:right;color:var(--ok)">+22,4pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;padding:16px;background:var(--ok-bg);border-radius:8px;display:flex;align-items:center;gap:16px">
+      <div style="font-size:32px">💡</div>
+      <div>
+        <div style="font-weight:700;color:var(--ok);font-size:16px">Se atingir todas as metas:</div>
+        <div style="font-size:14px;margin-top:4px">
+          Margem sobe de <strong>40,9%</strong> para <strong>63,3%</strong> — 
+          ganho adicional de <strong>R$ 1,35M em 4 meses</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENÁRIO REALISTA -->
+  <div class="two-col equal" style="margin-bottom:20px">
+    <div class="data-card" style="border-left:4px solid var(--ok)">
+      <div class="data-card-title" style="color:var(--ok)">✅ Cenário Conservador (50% das metas)</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span>Economia estimada:</span>
+          <span class="mono" style="font-weight:700;color:var(--ok)">R$ 677k / 4 meses</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span>Nova margem:</span>
+          <span class="mono" style="font-weight:700;color:var(--ok)">52,1%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span>Ganho por mês:</span>
+          <span class="mono" style="font-weight:700;color:var(--ok)">R$ 169k</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--stone)">
+        Meta: Alocar 50% do MATA-METRO + reduzir hospedagem em 0,75pp
+      </div>
+    </div>
+    <div class="data-card" style="border-left:4px solid var(--gold)">
+      <div class="data-card-title" style="color:var(--gold)">🎯 Cenário Agressivo (100% das metas)</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span>Economia estimada:</span>
+          <span class="mono" style="font-weight:700;color:var(--gold)">R$ 1.355k / 4 meses</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span>Nova margem:</span>
+          <span class="mono" style="font-weight:700;color:var(--gold)">63,3%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span>Ganho por mês:</span>
+          <span class="mono" style="font-weight:700;color:var(--gold)">R$ 339k</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--stone)">
+        Meta: Eliminar MATA-METRO + otimizar logística e hospedagem
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- INDICADORES OPERACIONAIS -->
+  <div class="sec-hdr">
+    <div class="sec-label">Operacional</div>
+    <div class="sec-title">Indicadores de Obras</div>
+  </div>
+
+  <div class="g4">
+    <div class="data-card" style="text-align:center">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:4px">OBRAS ATIVAS</div>
+      <div style="font-size:32px;font-weight:700;color:var(--info)">182</div>
+      <div style="font-size:11px;color:var(--stone)">em andamento</div>
+    </div>
+    <div class="data-card" style="text-align:center">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:4px">PRAZOS EM DIA</div>
+      <div style="font-size:32px;font-weight:700;color:var(--act)">24%</div>
+      <div style="font-size:11px;color:var(--act)">🚨 CRÍTICO</div>
+    </div>
+    <div class="data-card" style="text-align:center">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:4px">OBRAS CRÍTICAS</div>
+      <div style="font-size:32px;font-weight:700;color:var(--act)">106</div>
+      <div style="font-size:11px;color:var(--stone)">prazo + informação</div>
+    </div>
+    <div class="data-card" style="text-align:center">
+      <div style="font-size:11px;color:var(--stone);margin-bottom:4px">PROBLEMAS</div>
+      <div style="font-size:32px;font-weight:700;color:var(--watch)">499</div>
+      <div style="font-size:11px;color:var(--stone)">abertos</div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- AÇÕES PRIORITÁRIAS -->
+  <div class="sec-hdr">
+    <div class="sec-label">Próximos passos</div>
+    <div class="sec-title">Ações Prioritárias para Melhorar a Margem</div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>Ação</th>
+          <th style="text-align:center">Impacto</th>
+          <th style="text-align:center">Esforço</th>
+          <th style="text-align:right">Economia Est.</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">1</td>
+          <td><strong>Manter política de alocação por projeto</strong> — MATA-METRO caiu 96%</td>
+          <td style="text-align:center"><span class="sbadge sb-ok">ALTO</span></td>
+          <td style="text-align:center"><span class="sbadge sb-ok">BAIXO</span></td>
+          <td class="mono" style="text-align:right;color:var(--ok)">R$ 877k</td>
+        </tr>
+        <tr>
+          <td class="mono">2</td>
+          <td><strong>Investigar TGSJ Empreendimentos</strong> — R$ 120k em devoluções</td>
+          <td style="text-align:center"><span class="sbadge sb-ok">ALTO</span></td>
+          <td style="text-align:center"><span class="sbadge sb-info">MÉDIO</span></td>
+          <td class="mono" style="text-align:right">R$ 120k</td>
+        </tr>
+        <tr>
+          <td class="mono">3</td>
+          <td><strong>Otimizar logística de obras fora do estado</strong> — frete + km rodados</td>
+          <td style="text-align:center"><span class="sbadge sb-info">MÉDIO</span></td>
+          <td style="text-align:center"><span class="sbadge sb-info">MÉDIO</span></td>
+          <td class="mono" style="text-align:right">R$ 91k</td>
+        </tr>
+        <tr>
+          <td class="mono">4</td>
+          <td><strong>Negociar contratos de hospedagem</strong> — parcerias com hotéis</td>
+          <td style="text-align:center"><span class="sbadge sb-info">MÉDIO</span></td>
+          <td style="text-align:center"><span class="sbadge sb-ok">BAIXO</span></td>
+          <td class="mono" style="text-align:right">R$ 91k</td>
+        </tr>
+        <tr>
+          <td class="mono">5</td>
+          <td><strong>Revisar processo de indenizações</strong> — checklist pré/pós obra</td>
+          <td style="text-align:center"><span class="sbadge sb-watch">BAIXO</span></td>
+          <td style="text-align:center"><span class="sbadge sb-ok">BAIXO</span></td>
+          <td class="mono" style="text-align:right">R$ 45k</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// ═══ DADOS ═══
+const custos = [
+  {nome: 'Matéria-Prima', valor: 979204, cor: '#2D5A4A', meta: 16, atual: 16.19},
+  {nome: 'MATA-METRO', valor: 1179524, cor: '#8B2020', meta: 15, atual: 19.51},
+  {nome: 'Mão de obra direta', valor: 992479, cor: '#3D6B4A', meta: 20, atual: 16.41},
+  {nome: 'Devoluções de Vendas', valor: 361803, cor: '#C8A96E', meta: null, atual: 5.98},
+  {nome: 'Hospedagem', valor: 268861, cor: '#8B5A1A', meta: 3, atual: 4.45},
+  {nome: 'Comissões', valor: 185716, cor: '#4A3F38', meta: 4, atual: 3.07},
+  {nome: 'Km rodados', valor: 178710, cor: '#6B4423', meta: 2, atual: 2.96},
+  {nome: 'Materiais consumo', valor: 169690, cor: '#5C4033', meta: 2, atual: 2.81},
+  {nome: 'Alimentação', valor: 146593, cor: '#7B5544', meta: 1.5, atual: 2.42},
+  {nome: 'Deslocamento', valor: 139383, cor: '#8C6655', meta: 1.5, atual: 2.30},
+  {nome: 'Visitas técnicas', valor: 112080, cor: '#9D7766', meta: 1, atual: 1.85},
+  {nome: 'Supervisão', valor: 73891, cor: '#AE8877', meta: 0.8, atual: 1.22},
+  {nome: 'Frete', valor: 63099, cor: '#BF9988', meta: 1, atual: 1.04},
+  {nome: 'Indenizações', valor: 62483, cor: '#D0AA99', meta: 0.5, atual: 1.03}
+];
+
+const totalCusto = custos.reduce((s, c) => s + c.valor, 0);
+const receita = 6047081;
+
+// ═══ TABS ═══
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ═══ TOOLTIP ═══
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(e, title, value, pct) {
+  tooltip.innerHTML = `
+    <div class="tooltip-title">${title}</div>
+    <div class="tooltip-value">${value}</div>
+    <div class="tooltip-pct">${pct}</div>
+  `;
+  tooltip.classList.add('show');
+  const rect = e.target.getBoundingClientRect();
+  tooltip.style.left = (rect.left + rect.width/2 - tooltip.offsetWidth/2) + 'px';
+  tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('show');
+}
+
+// ═══ DONUT CHART ═══
+function renderDonut() {
+  const svg = document.getElementById('donut-chart');
+  const legend = document.getElementById('chart-legend');
+  
+  const cx = 100, cy = 100, r = 70;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  
+  let paths = '';
+  let legendHtml = '';
+  
+  custos.forEach((c, i) => {
+    const pct = c.valor / totalCusto;
+    const dash = pct * circ;
+    
+    paths += `<circle 
+      cx="${cx}" cy="${cy}" r="${r}" 
+      fill="none" stroke="${c.cor}" stroke-width="30"
+      stroke-dasharray="${dash} ${circ - dash}"
+      stroke-dashoffset="${-offset}"
+      style="cursor:pointer"
+      data-nome="${c.nome}"
+      data-valor="${c.valor}"
+      data-pct="${c.atual}"
+    />`;
+    
+    offset += dash;
+    
+    legendHtml += `
+      <div class="legend-item" data-idx="${i}">
+        <div class="legend-color" style="background:${c.cor}"></div>
+        <div class="legend-name">${c.nome}</div>
+        <div class="legend-value">R$ ${(c.valor/1000).toFixed(0)}k</div>
+        <div class="legend-pct">${c.atual.toFixed(1)}%</div>
+      </div>
+    `;
+  });
+  
+  svg.innerHTML = paths;
+  legend.innerHTML = legendHtml;
+  
+  // Events
+  svg.querySelectorAll('circle').forEach(circle => {
+    circle.addEventListener('mouseenter', (e) => {
+      const nome = e.target.dataset.nome;
+      const valor = parseInt(e.target.dataset.valor);
+      const pct = e.target.dataset.pct;
+      showTooltip(e, nome, 'R$ ' + valor.toLocaleString('pt-BR'), pct + '% da receita');
+    });
+    circle.addEventListener('mouseleave', hideTooltip);
+  });
+  
+  legend.querySelectorAll('.legend-item').forEach(item => {
+    item.addEventListener('mouseenter', (e) => {
+      const idx = parseInt(item.dataset.idx);
+      const c = custos[idx];
+      showTooltip(e, c.nome, 'R$ ' + c.valor.toLocaleString('pt-BR'), c.atual + '% da receita');
+    });
+    item.addEventListener('mouseleave', hideTooltip);
+  });
+}
+
+// ═══ TABELA DE CUSTOS ═══
+function renderTabelaCustos() {
+  const tbody = document.getElementById('tbl-custos');
+  let html = '';
+  
+  custos.forEach(c => {
+    const status = c.meta === null ? '' : 
+      (c.atual <= c.meta ? '<span class="sbadge sb-ok">OK</span>' : '<span class="sbadge sb-watch">⚠️</span>');
+    
+    html += `<tr>
+      <td>${c.nome}</td>
+      <td class="mono" style="text-align:right">R$ ${(c.valor/1000).toFixed(0)}k</td>
+      <td class="mono" style="text-align:right">${c.atual.toFixed(2)}%</td>
+      <td style="text-align:center">${status}</td>
+    </tr>`;
+  });
+  
+  html += `<tr style="background:var(--gold-bg)">
+    <td><strong>TOTAL</strong></td>
+    <td class="mono" style="text-align:right"><strong>R$ ${(totalCusto/1000000).toFixed(2)}M</strong></td>
+    <td class="mono" style="text-align:right"><strong>${(totalCusto/receita*100).toFixed(2)}%</strong></td>
+    <td></td>
+  </tr>`;
+  
+  tbody.innerHTML = html;
+}
+
+// ═══ MARGIN BARS TOOLTIP ═══
+document.querySelectorAll('.margin-seg').forEach(seg => {
+  seg.addEventListener('mouseenter', (e) => {
+    const tip = seg.dataset.tip;
+    if (tip) {
+      const [title, valor, pct] = tip.split('|');
+      showTooltip(e, title, valor, pct);
+    }
+  });
+  seg.addEventListener('mouseleave', hideTooltip);
+});
+
+// ═══ DRILL DATA (projetos por categoria) ═══
+const drillData = {
+  "MATA-METRO": [
+    {nome: "DENNER QUEIROZ DE LIMA", valor: 24136.80},
+    {nome: "JOAO VICTOR QUEIROZ DE LIMA AUGUSTO", valor: 23444.36},
+    {nome: "JOSE CARLOS ROMAO AUGUSTO", valor: 23296.63},
+    {nome: "COSME EDUARDO SOARES RAGNO", valor: 23240.86},
+    {nome: "JOAO VITOR MIRANDA FAGUENDES", valor: 21953.51},
+    {nome: "FERNANDO ROMAO AUGUSTO", valor: 21948.89},
+    {nome: "ADILSON CORREA ARAGAO JUNIOR", valor: 20608.30},
+    {nome: "JAELSON FERREIRA DA SILVA", valor: 20408.30},
+    {nome: "EGBERTO - PINTOR PROFISSIONAL RJ", valor: 19898.12},
+    {nome: "WIGUENS LOUIS", valor: 19487.08},
+  ],
+  "Mão de obra direta": [
+    {nome: "AVVA HOUSE - MOZART DA SILVA", valor: 91302.13},
+    {nome: "ROBERTA ESTRELA D'ALVA", valor: 61899.21},
+    {nome: "MARCOS JOSÉ VEIGA GOMES", valor: 60469.60},
+    {nome: "CAROLINA RACHE GUIMARAES", valor: 56881.69},
+    {nome: "FELIPE GUSTAVO LOPES DE OLIVEIRA", valor: 31608.22},
+    {nome: "GUILHERME HAIDAR BERJEAUT", valor: 26021.82},
+    {nome: "YAHYA EL HASSAN", valor: 25346.29},
+    {nome: "MANOELA LATINI GAVASSI FRANCISCO", valor: 24616.40},
+    {nome: "FELIPE CARLOS ARSLAN", valor: 19743.72},
+    {nome: "MARIO SABINO FILHO", valor: 19640.40},
+  ],
+  "Devoluções de Vendas": [
+    {nome: "TGSJ EMPREENDIMENTOS IMOBILIÁRIOS", valor: 119900.79},
+    {nome: "MARCEL STEFANI BONZO", valor: 46846.32},
+    {nome: "ALINIE MENDES PEIGO", valor: 46617.86},
+    {nome: "GABRIELA GUARITA DIRANI", valor: 40076.93},
+    {nome: "PATRICK PETRY", valor: 40000.00},
+    {nome: "FLAVIA AUGUSTA DE ASSIS ROCHA", valor: 22958.13},
+    {nome: "R3 - PR", valor: 21446.00},
+    {nome: "PEDRO SONEGO DE OLIVEIRA", valor: 12247.92},
+  ],
+  "Hospedagem": [
+    {nome: "CAROLINA RACHE GUIMARAES", valor: 60775.37},
+    {nome: "GUSTAVO DE SOUZA PEREIRA", valor: 38954.71},
+    {nome: "IOLANDA ODEBRECHT PELTIER", valor: 27750.00},
+    {nome: "AMENDOEIRAS SPE", valor: 21744.82},
+    {nome: "MARCOS JOSÉ VEIGA GOMES", valor: 14835.00},
+    {nome: "ALEXANDRE CALIL SICCHIERI", valor: 14700.00},
+    {nome: "BENY MAJTLIS", valor: 14500.00},
+    {nome: "JOSUE MONTEDONIO NASCIMENTO", valor: 11200.00},
+  ],
+  "Comissões": [
+    {nome: "PAULA LOBO FURTADO MACHADO", valor: 16368.29},
+    {nome: "GABRIELA GUARITA DIRANI", valor: 16010.19},
+    {nome: "JOAO ACHILLES GRENIER GLUCK", valor: 13243.73},
+    {nome: "ALEXANDRE BUSS VAN DEN MOSSELAAR", valor: 12334.02},
+    {nome: "MANOELA LATINI GAVASSI", valor: 11838.74},
+    {nome: "BRUNO MEIRELLES SELIGMANN", valor: 11620.00},
+    {nome: "LUIS GUSTAVO ROVARON", valor: 10042.65},
+  ],
+  "Km rodados": [
+    {nome: "MATA-METRO (pool)", valor: 159878.89},
+    {nome: "JOSUE MONTEDONIO NASCIMENTO", valor: 2331.89},
+    {nome: "ROBERTA ESTRELA D'ALVA", valor: 2256.36},
+    {nome: "DREAM FARM AGRONEGOCIOS", valor: 1963.13},
+    {nome: "ALEXANDRE CALIL SICCHIERI", valor: 1121.20},
+  ],
+  "Materiais": [
+    {nome: "MATA-METRO (pool)", valor: 70709.41},
+    {nome: "AVVA HOUSE - MOZART DA SILVA", valor: 5320.84},
+    {nome: "FELIPE GUSTAVO LOPES", valor: 4277.22},
+    {nome: "VICENTE PAULO DAS GRACAS", valor: 4239.14},
+    {nome: "ROBERTA ESTRELA D'ALVA", valor: 3657.80},
+  ],
+  "Alimentação": [
+    {nome: "MATA-METRO (pool)", valor: 66328.95},
+    {nome: "AVVA HOUSE - MOZART DA SILVA", valor: 14879.00},
+    {nome: "CAROLINA RACHE GUIMARAES", valor: 11352.00},
+    {nome: "IOLANDA ODEBRECHT PELTIER", valor: 7964.00},
+    {nome: "MARCOS JOSÉ VEIGA GOMES", valor: 6864.00},
+  ],
+  "Deslocamento": [
+    {nome: "IOLANDA ODEBRECHT PELTIER", valor: 30204.41},
+    {nome: "Obras João Pedro Scangatta", valor: 23898.49},
+    {nome: "MATA-METRO (pool)", valor: 17263.03},
+    {nome: "MARCOS JOSÉ VEIGA GOMES", valor: 17261.69},
+    {nome: "Obras Iolanda + Mariana Brennand", valor: 14793.35},
+  ],
+  "Visitas técnicas": [
+    {nome: "TALLY FELDMAN SINGAL GROSS", valor: 2550.00},
+    {nome: "MANOELA LATINI GAVASSI", valor: 1875.00},
+    {nome: "PETITE FLEUR PATISSERIE", valor: 1875.00},
+    {nome: "HOUSSEIN EL JAROUCHE", valor: 1650.00},
+    {nome: "GETULIO TURATTI OST", valor: 1475.00},
+  ],
+  "Supervisão": [
+    {nome: "MANOELA LATINI GAVASSI", valor: 8338.14},
+    {nome: "IOLANDA ODEBRECHT PELTIER", valor: 3255.71},
+    {nome: "GUILHERME HAIDAR BERJEAUT", valor: 3238.40},
+    {nome: "ROBERTA ESTRELA D'ALVA", valor: 2747.96},
+    {nome: "MARCOS JOSÉ VEIGA GOMES", valor: 2696.81},
+  ],
+  "Frete": [
+    {nome: "MARCOS JOSÉ VEIGA GOMES", valor: 16318.39},
+    {nome: "IOLANDA ODEBRECHT PELTIER", valor: 13550.00},
+    {nome: "MARIANA BRENNAND FORTES", valor: 7400.00},
+    {nome: "VICENTE PAULO DAS GRACAS", valor: 6500.00},
+    {nome: "AMENDOEIRAS SPE", valor: 3950.00},
+  ],
+  "Indenizações": [
+    {nome: "RODOLFO RODRIGUES VASCONCELLOS", valor: 20000.00},
+    {nome: "RODOLFO NATIVIDADE TORELLO", valor: 7652.21},
+    {nome: "PAULA WALDVOGEL OTERO", valor: 7000.00},
+    {nome: "ANDRE KEUNECKE SALERNO", valor: 4881.29},
+    {nome: "RENATO EID TUCCI", valor: 4860.00},
+  ],
+};
+
+// ═══ DRILL-DOWN PANEL ═══
+let selectedCategory = null;
+
+function showDrillDown(catNome) {
+  selectedCategory = catNome;
+  const panel = document.getElementById('drill-panel');
+  const title = document.getElementById('drill-title');
+  const grid = document.getElementById('drill-grid');
+  
+  const cat = custos.find(c => c.nome === catNome);
+  const projetos = drillData[catNome] || [];
+  
+  title.innerHTML = `<span style="color:${cat?.cor || 'var(--gold)'}">${catNome}</span> — Projetos relacionados`;
+  
+  if (projetos.length === 0) {
+    grid.innerHTML = '<div style="color:var(--stone);padding:20px;text-align:center">Sem projetos detalhados para esta categoria</div>';
+  } else {
+    const totalCat = projetos.reduce((s, p) => s + p.valor, 0);
+    grid.innerHTML = projetos.map((p, i) => {
+      const pct = (p.valor / totalCat * 100).toFixed(1);
+      const barW = Math.min(p.valor / projetos[0].valor * 100, 100);
+      return `
+        <div class="drill-item">
+          <div class="drill-rank">${i + 1}</div>
+          <div class="drill-info">
+            <div class="drill-nome">${p.nome}</div>
+            <div class="drill-bar-track">
+              <div class="drill-bar-fill" style="width:${barW}%;background:${cat?.cor || 'var(--gold)'}"></div>
+            </div>
+          </div>
+          <div class="drill-valores">
+            <div class="drill-valor">R$ ${(p.valor/1000).toFixed(1)}k</div>
+            <div class="drill-pct">${pct}%</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function hideDrillDown() {
+  selectedCategory = null;
+  document.getElementById('drill-panel').classList.remove('show');
+}
+
+// ═══ INIT ═══
+renderDonut();
+renderTabelaCustos();
+
+// Add click events for drill-down
+document.getElementById('donut-chart').addEventListener('click', (e) => {
+  if (e.target.tagName === 'circle') {
+    const nome = e.target.dataset.nome;
+    if (nome) showDrillDown(nome);
+  }
+});
+
+document.getElementById('chart-legend').addEventListener('click', (e) => {
+  const item = e.target.closest('.legend-item');
+  if (item) {
+    const idx = parseInt(item.dataset.idx);
+    showDrillDown(custos[idx].nome);
+  }
+});
+
+// ═══ DADOS OPERACIONAIS (obras por etapa) ═══
+const opData = {
+  "Material em Produção": {
+    cor: "#8B2020",
+    obras: [
+      {nome: "AVVA HOUSE - MOZART DA SILVA", cidade: "São Paulo", m2: 485, dias: 36},
+      {nome: "GUILHERME HAIDAR BERJEAUT", cidade: "São Paulo", m2: 220, dias: 28},
+      {nome: "CAROLINA RACHE GUIMARAES", cidade: "Rio de Janeiro", m2: 180, dias: 24},
+      {nome: "MARCOS JOSÉ VEIGA GOMES", cidade: "Curitiba", m2: 340, dias: 21},
+      {nome: "FELIPE GUSTAVO LOPES", cidade: "São Paulo", m2: 292, dias: 19}
+    ]
+  },
+  "VT Entrada Agendada": {
+    cor: "#8B5A1A",
+    obras: [
+      {nome: "TALLY FELDMAN SINGAL GROSS", cidade: "São Paulo", m2: 100, dias: 99},
+      {nome: "IOLANDA ODEBRECHT PELTIER", cidade: "Salvador", m2: 380, dias: 45},
+      {nome: "YAHYA EL HASSAN", cidade: "São Paulo", m2: 165, dias: 32},
+      {nome: "MANOELA LATINI GAVASSI", cidade: "São Paulo", m2: 485, dias: 28}
+    ]
+  },
+  "Logística Programada": {
+    cor: "#8B5A1A",
+    obras: [
+      {nome: "TAIS DE ALBUQUERQUE ROCHA", cidade: "Curitiba", m2: 113, dias: 15},
+      {nome: "ANDRE KEUNECKE SALERNO", cidade: "São Paulo", m2: 366, dias: 12},
+      {nome: "PETITE FLEUR PATISSERIE", cidade: "São Paulo", m2: 120, dias: 14},
+      {nome: "FLÁVIO FAVA DITT", cidade: "São Paulo", m2: 186, dias: 17}
+    ]
+  },
+  "Equipe Definida": {
+    cor: "#3D6B4A",
+    obras: [
+      {nome: "CLÁUDIA RESENDE SOARES", cidade: "Rio de Janeiro", m2: 148, dias: 182},
+      {nome: "ALEXANDRE OSMAN - BILAL", cidade: "São Bernardo", m2: 203, dias: 108},
+      {nome: "MANOELA LATINI GAVASSI", cidade: "São Paulo", m2: 485, dias: 36}
+    ]
+  },
+  "Em Execução": {
+    cor: "#C8A96E",
+    obras: [
+      {nome: "CLÁUDIA RESENDE SOARES", cidade: "Rio de Janeiro", m2: 148, dias: 182, status: "Stelion em cura"},
+      {nome: "ALEXANDRE OSMAN - BILAL", cidade: "São Bernardo", m2: 203, dias: 108, status: "Última demão"},
+      {nome: "MANOELA LATINI GAVASSI", cidade: "São Paulo", m2: 485, dias: 36, status: "3ª demão selada"},
+      {nome: "FELIPE GUSTAVO LOPES", cidade: "São Paulo", m2: 292, dias: 35, status: "Equipe em obra"},
+      {nome: "CHRISTIAN KORT CERAVOLO", cidade: "São Paulo", m2: 93, dias: 18, status: "2ª demão Lumina"},
+      {nome: "THIAGO DORIA", cidade: "Jaguariúna", m2: 120, dias: 17, status: "Material entregue"},
+      {nome: "FLÁVIO FAVA DITT", cidade: "São Paulo", m2: 186, dias: 17, status: "Equipe em obra"},
+      {nome: "PETITE FLEUR PATISSERIE", cidade: "São Paulo", m2: 120, dias: 14, status: "Verniz final"},
+      {nome: "TAIS DE ALBUQUERQUE", cidade: "Curitiba", m2: 113, dias: 12, status: "Sem equipe confirmada"},
+      {nome: "ANDRE KEUNECKE SALERNO", cidade: "São Paulo", m2: 366, dias: 7, status: "Parada por chuva"}
+    ]
+  },
+  "Obras Pausadas": {
+    cor: "#8B2020",
+    obras: [
+      {nome: "GUILHERME WENTZ", cidade: "São Paulo", m2: 249, dias: 139, status: "Aguardando cliente"},
+      {nome: "ANTONIO CARLOS CANTO PORTO", cidade: "São Paulo", m2: 363, dias: 111, status: "Sem definição"},
+      {nome: "CLÁUDIO KUTNIKAS", cidade: "Atibaia", m2: 5, dias: 111, status: "Externa"},
+      {nome: "RICARDO PAES DE BARROS", cidade: "São Paulo", m2: 115, dias: 100, status: "Aguardando obra civil"},
+      {nome: "STELION SPE", cidade: "São Paulo", m2: 1103, dias: 85, status: "Projeto grande"},
+      {nome: "LILIT SPE", cidade: "São Paulo", m2: 476, dias: 75, status: "Projeto grande"}
+    ]
+  },
+  "Aguardando Clima": {
+    cor: "#8B5A1A",
+    obras: [
+      {nome: "TALLY FELDMAN SINGAL GROSS", cidade: "São Paulo", m2: 100, dias: 99, status: "Finalização banco"},
+      {nome: "ROBERTA ESTRELA D'ALVA", cidade: "São Paulo", m2: 241, dias: 72, status: "Aguardando condições"},
+      {nome: "JOSUE MONTEDONIO", cidade: "São Paulo", m2: 156, dias: 45, status: "Chuvas"},
+      {nome: "GUSTAVO DE SOUZA PEREIRA", cidade: "Guarulhos", m2: 220, dias: 38, status: "Umidade alta"}
+    ]
+  },
+  "Reparo": {
+    cor: "#8B5A1A",
+    obras: [
+      {nome: "ALINIE MENDES PEIGO", cidade: "Bertioga", m2: 433, dias: 84, status: "Reaplicação externa"},
+      {nome: "RODOLFO NATIVIDADE TORELLO", cidade: "São Paulo", m2: 180, dias: 45, status: "Correção tonalidade"},
+      {nome: "PAULA WALDVOGEL OTERO", cidade: "São Paulo", m2: 95, dias: 30, status: "Retoque pós-obra"},
+      {nome: "RENATO EID TUCCI", cidade: "São Paulo", m2: 120, dias: 25, status: "Manutenção"}
+    ]
+  }
+};
+
+// ═══ DRILL-DOWN OPERACIONAL ═══
+let selectedEtapa = null;
+
+function showOpDrill(etapa) {
+  selectedEtapa = etapa;
+  const panel = document.getElementById('op-drill-panel');
+  const title = document.getElementById('op-drill-title');
+  const subtitle = document.getElementById('op-drill-subtitle');
+  const grid = document.getElementById('op-drill-grid');
+  
+  const data = opData[etapa];
+  if (!data) {
+    grid.innerHTML = '<div style="color:var(--stone);padding:20px;text-align:center">Sem obras detalhadas para esta etapa</div>';
+    panel.classList.add('show');
+    return;
+  }
+  
+  const obras = data.obras;
+  const totalM2 = obras.reduce((s, o) => s + o.m2, 0);
+  
+  title.innerHTML = `<span style="color:${data.cor}">${etapa}</span>`;
+  subtitle.textContent = `${obras.length} obras · ${totalM2.toLocaleString('pt-BR')}m² total`;
+  
+  grid.innerHTML = obras.map((o, i) => {
+    const diasClass = o.dias > 60 ? 'critico' : (o.dias > 30 ? 'alerta' : 'ok');
+    return `
+      <div class="op-obra">
+        <div class="op-obra-rank">${i + 1}</div>
+        <div class="op-obra-info">
+          <div class="op-obra-nome">${o.nome}</div>
+          <div class="op-obra-meta">
+            <span>📍 ${o.cidade}</span>
+            <span>📐 ${o.m2}m²</span>
+            ${o.status ? `<span>🔖 ${o.status}</span>` : ''}
+          </div>
+        </div>
+        <div class="op-obra-dias">
+          <div class="op-obra-dias-val ${diasClass}">${o.dias}d</div>
+          <div class="op-obra-dias-label">em obra</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Remover active de outros cards
+  document.querySelectorAll('.risk-card').forEach(c => c.classList.remove('active'));
+  // Adicionar active no card clicado
+  document.querySelector(`.risk-card[data-etapa="${etapa}"]`)?.classList.add('active');
+  
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function hideOpDrill() {
+  selectedEtapa = null;
+  document.getElementById('op-drill-panel').classList.remove('show');
+  document.querySelectorAll('.risk-card').forEach(c => c.classList.remove('active'));
+}
+
+// Event listeners para os risk-cards
+document.querySelectorAll('.risk-card[data-etapa]').forEach(card => {
+  card.addEventListener('click', () => {
+    const etapa = card.dataset.etapa;
+    if (selectedEtapa === etapa) {
+      hideOpDrill();
+    } else {
+      showOpDrill(etapa);
+    }
+  });
+});
+
+// ═══ DADOS DE PROJEÇÃO ═══
+const projetos = [
+  {
+    projeto: "CAROLINA RACHE GUIMARAES",
+    mao_obra: 56882, hotel: 60775, alimentacao: 11352, logistica: 3233, materiais: 1911, supervisao: 0,
+    custo_total: 134153
+  },
+  {
+    projeto: "AVVA HOUSE - MOZART DA SILVA",
+    mao_obra: 91302, hotel: 0, alimentacao: 14879, logistica: 10986, materiais: 5321, supervisao: 298,
+    custo_total: 122786
+  },
+  {
+    projeto: "MARCOS JOSÉ VEIGA GOMES",
+    mao_obra: 61587, hotel: 14835, alimentacao: 6864, logistica: 33580, materiais: 1660, supervisao: 2697,
+    custo_total: 121223
+  },
+  {
+    projeto: "IOLANDA ODEBRECHT PELTIER",
+    mao_obra: 12456, hotel: 27750, alimentacao: 7964, logistica: 44107, materiais: 2408, supervisao: 3256,
+    custo_total: 97941
+  },
+  {
+    projeto: "ROBERTA ESTRELA D'ALVA",
+    mao_obra: 61899, hotel: 0, alimentacao: 0, logistica: 3534, materiais: 3658, supervisao: 2748,
+    custo_total: 71839
+  },
+  {
+    projeto: "GUSTAVO DE SOUZA PEREIRA",
+    mao_obra: 15503, hotel: 38955, alimentacao: 0, logistica: 0, materiais: 1555, supervisao: 0,
+    custo_total: 56013
+  },
+  {
+    projeto: "AMENDOEIRAS SPE",
+    mao_obra: 4177, hotel: 21745, alimentacao: 5456, logistica: 9050, materiais: 1647, supervisao: 2634,
+    custo_total: 44709
+  },
+  {
+    projeto: "FELIPE GUSTAVO LOPES",
+    mao_obra: 31608, hotel: 0, alimentacao: 0, logistica: 49, materiais: 4277, supervisao: 1650,
+    custo_total: 37584
+  },
+  {
+    projeto: "MANOELA LATINI GAVASSI",
+    mao_obra: 24616, hotel: 0, alimentacao: 0, logistica: 0, materiais: 1228, supervisao: 8338,
+    custo_total: 34182
+  },
+  {
+    projeto: "GUILHERME HAIDAR BERJEAUT",
+    mao_obra: 26022, hotel: 0, alimentacao: 0, logistica: 373, materiais: 2449, supervisao: 3238,
+    custo_total: 32082
+  }
+];
+
+// Benchmark (baseado em receita média de R$106k)
+const RECEITA_MEDIA = 106089;
+const BENCHMARK = {
+  materia_prima: 0.16, // 16% - DADOS REAIS (R$ 979k / R$ 6.047k)
+  mao_obra: 0.15,      // 15%
+  logistica: 0.05,     // 5% - Km + Deslocamento + Frete + Aluguel
+  hotel: 0.03,         // 3%
+  alimentacao: 0.015,  // 1.5%
+  materiais: 0.01,     // 1% - materiais de consumo
+  supervisao: 0.01     // 1%
+};
+
+// Custo total benchmark SEM matéria-prima (pois não temos dados reais)
+const benchmarkSemMP = (BENCHMARK.mao_obra + BENCHMARK.logistica + BENCHMARK.hotel + 
+                        BENCHMARK.alimentacao + BENCHMARK.materiais + BENCHMARK.supervisao) * RECEITA_MEDIA;
+const benchmarkTotal = benchmarkSemMP; // Usando sem MP para comparar com dados que temos
+
+// Renderizar tabela de projeção
+function renderTabelaProjecao() {
+  const tbody = document.getElementById('tbl-projecao-body');
+  
+  tbody.innerHTML = projetos.map((p, i) => {
+    const diff = p.custo_total - benchmarkTotal;
+    const diffPct = (diff / benchmarkTotal * 100).toFixed(0);
+    const statusClass = diff > 10000 ? 'sb-act' : (diff > 5000 ? 'sb-watch' : 'sb-ok');
+    const statusText = diff > 10000 ? 'ACIMA' : (diff > 5000 ? 'ATENÇÃO' : 'OK');
+    
+    return `
+      <tr class="proj-row" data-idx="${i}" style="cursor:pointer">
+        <td><strong>${p.projeto}</strong></td>
+        <td class="mono" style="text-align:right">R$ ${(p.custo_total/1000).toFixed(1)}k</td>
+        <td class="mono" style="text-align:right">R$ ${(benchmarkTotal/1000).toFixed(1)}k</td>
+        <td class="mono" style="text-align:right;color:${diff > 0 ? 'var(--act)' : 'var(--ok)'}">
+          ${diff > 0 ? '+' : ''}R$ ${(diff/1000).toFixed(1)}k (${diff > 0 ? '+' : ''}${diffPct}%)
+        </td>
+        <td style="text-align:center"><span class="sbadge ${statusClass}">${statusText}</span></td>
+      </tr>
+    `;
+  }).join('');
+  
+  // Add click events
+  document.querySelectorAll('.proj-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const idx = parseInt(row.dataset.idx);
+      showProjDrill(projetos[idx]);
+    });
+  });
+}
+
+// Drill-down de projeto
+function showProjDrill(proj) {
+  const panel = document.getElementById('proj-drill-panel');
+  const title = document.getElementById('proj-drill-title');
+  const subtitle = document.getElementById('proj-drill-subtitle');
+  const content = document.getElementById('proj-drill-content');
+  
+  title.textContent = proj.projeto;
+  subtitle.textContent = `Custo total: R$ ${(proj.custo_total/1000).toFixed(1)}k | Benchmark: R$ ${(benchmarkTotal/1000).toFixed(1)}k`;
+  
+  const categorias = [
+    {nome: 'Matéria-Prima', key: 'materia_prima', bench: BENCHMARK.materia_prima, pendente: false},
+    {nome: 'Mão de Obra', key: 'mao_obra', bench: BENCHMARK.mao_obra},
+    {nome: '🚚 Logística & Transporte', key: 'logistica', bench: BENCHMARK.logistica},
+    {nome: 'Hospedagem', key: 'hotel', bench: BENCHMARK.hotel},
+    {nome: 'Alimentação', key: 'alimentacao', bench: BENCHMARK.alimentacao},
+    {nome: 'Materiais Consumo', key: 'materiais', bench: BENCHMARK.materiais},
+    {nome: 'Supervisão', key: 'supervisao', bench: BENCHMARK.supervisao}
+  ];
+  
+  let html = '<div style="background:var(--concrete);border-radius:6px;padding:16px">';
+  html += '<div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:.1em">Comparativo por Categoria</div>';
+  
+  categorias.forEach(cat => {
+    const real = proj[cat.key] || 0;
+    const bench = cat.bench * RECEITA_MEDIA;
+    const diff = real - bench;
+    
+    if (cat.pendente) {
+      // Matéria-prima pendente
+      html += `
+        <div style="margin-bottom:12px;padding:10px;background:rgba(139,90,26,0.2);border-radius:6px;border-left:3px solid var(--watch)">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:var(--watch)">⚠️ ${cat.nome}</span>
+            <span style="color:var(--watch);font-family:var(--font-mono);font-size:11px">
+              Dados pendentes | Benchmark: R$ ${(bench/1000).toFixed(1)}k
+            </span>
+          </div>
+          <div style="font-size:10px;color:var(--stone-light)">Levantar custo de microcimento, resina e pigmentos</div>
+        </div>
+      `;
+    } else {
+      const diffClass = diff > 1000 ? 'color:var(--act)' : (diff > 0 ? 'color:var(--watch)' : 'color:var(--ok)');
+      const barReal = Math.min(real / 30000 * 100, 100);
+      const barBench = Math.min(bench / 30000 * 100, 100);
+      
+      html += `
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:var(--white)">${cat.nome}</span>
+            <span style="${diffClass};font-family:var(--font-mono);font-size:11px">
+              R$ ${(real/1000).toFixed(1)}k vs R$ ${(bench/1000).toFixed(1)}k
+              (${diff > 0 ? '+' : ''}${(diff/1000).toFixed(1)}k)
+            </span>
+          </div>
+          <div style="position:relative;height:8px;background:var(--concrete-mid);border-radius:4px;overflow:hidden">
+            <div style="position:absolute;height:100%;width:${barBench}%;background:var(--ok);opacity:0.3"></div>
+            <div style="position:absolute;height:100%;width:${barReal}%;background:${diff > 1000 ? 'var(--act)' : 'var(--ok)'};border-radius:4px"></div>
+          </div>
+        </div>
+      `;
+    }
+  });
+  
+  html += '</div>';
+  
+  // Recomendações
+  html += '<div style="background:var(--concrete);border-radius:6px;padding:16px">';
+  html += '<div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:.1em">Análise & Recomendações</div>';
+  
+  const issues = [];
+  if (proj.hotel > BENCHMARK.hotel * RECEITA_MEDIA * 2) {
+    issues.push({icon: '🏨', text: `Hospedagem ${((proj.hotel / (BENCHMARK.hotel * RECEITA_MEDIA) - 1) * 100).toFixed(0)}% acima do benchmark. Verificar distância do projeto e parceiros hoteleiros.`});
+  }
+  if (proj.logistica > BENCHMARK.logistica * RECEITA_MEDIA * 1.5) {
+    issues.push({icon: '🚚', text: `Logística ${((proj.logistica / (BENCHMARK.logistica * RECEITA_MEDIA) - 1) * 100).toFixed(0)}% acima. Avaliar otimização de rotas, frete parceiro ou equipe local.`});
+  }
+  if (proj.mao_obra > BENCHMARK.mao_obra * RECEITA_MEDIA * 1.5) {
+    issues.push({icon: '👷', text: `Mão de obra acima do esperado. Verificar complexidade do projeto ou ineficiência.`});
+  }
+  if (issues.length === 0) {
+    issues.push({icon: '✅', text: 'Projeto dentro dos parâmetros saudáveis. Manter monitoramento.'});
+  }
+  
+  issues.forEach(issue => {
+    html += `<div style="display:flex;gap:8px;margin-bottom:8px;font-size:12px;color:var(--stone-light)">
+      <span>${issue.icon}</span>
+      <span>${issue.text}</span>
+    </div>`;
+  });
+  
+  html += '</div>';
+  
+  content.innerHTML = html;
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function hideProjDrill() {
+  document.getElementById('proj-drill-panel').classList.remove('show');
+}
+
+// Renderizar tabela de projeção ao carregar
+renderTabelaProjecao();
+</script>
+
+</body>
+</html>
