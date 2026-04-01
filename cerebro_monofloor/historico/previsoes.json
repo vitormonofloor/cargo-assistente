@@ -1,0 +1,28 @@
+{
+  "versao": "1.0",
+  "descricao": "Previsões do Cérebro para auto-avaliação",
+  "previsoes": [
+    {
+      "id": "prev_001",
+      "data_previsao": "2026-04-01T08:00:00Z",
+      "data_alvo": "2026-04-07",
+      "tipo": "margem_bruta",
+      "valor_previsto": 42.5,
+      "intervalo_confianca": [40.0, 45.0],
+      "valor_real": null,
+      "erro_absoluto": null,
+      "erro_percentual": null,
+      "fatores_considerados": [
+        "tendencia_ultimos_4_meses",
+        "reducao_mata_metro",
+        "sazonalidade"
+      ]
+    }
+  ],
+  "metricas_agregadas": {
+    "total_previsoes": 0,
+    "acertos_dentro_intervalo": 0,
+    "erro_medio_absoluto": null,
+    "drift_acumulado": null
+  }
+}
