@@ -1,0 +1,22 @@
+{
+  "versao": "1.0",
+  "descricao": "Histórico de decisões do Cérebro Monofloor",
+  "decisoes": [
+    {
+      "id": "exemplo_001",
+      "data": "2026-04-01T08:00:00Z",
+      "tipo": "alerta",
+      "contexto": {
+        "fonte": "pipefy",
+        "indicador": "obras_atrasadas",
+        "valor_atual": 103,
+        "valor_anterior": 98
+      },
+      "decisao": "Gerar alerta crítico - aumento de 5% em obras atrasadas",
+      "acao_tomada": "telegram_alerta",
+      "confianca": 0.92,
+      "feedback_recebido": null,
+      "resultado_real": null
+    }
+  ]
+}
