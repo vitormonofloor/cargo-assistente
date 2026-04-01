@@ -1,0 +1,37 @@
+{
+  "versao": "1.0",
+  "descricao": "Feedback recebido de Vitor e correções aplicadas",
+  
+  "avaliacoes_alertas": [
+    {
+      "id": "aval_001",
+      "data": "2026-04-01T08:15:00Z",
+      "alerta_id": "alerta_xxx",
+      "tipo_alerta": "obra_atrasada",
+      "avaliacao": "positivo",
+      "comentario": null
+    }
+  ],
+  
+  "correcoes": [
+    {
+      "id": "corr_001",
+      "data": "2026-04-01T10:30:00Z",
+      "campo": "margem_bruta",
+      "valor_cerebro": 42.5,
+      "valor_correto": 40.9,
+      "motivo": "MATA-METRO não foi separado corretamente",
+      "aprendizado": "Sempre separar MATA-METRO de mão de obra direta",
+      "aplicado": true
+    }
+  ],
+  
+  "estatisticas": {
+    "total_avaliacoes": 0,
+    "positivos": 0,
+    "negativos": 0,
+    "taxa_aprovacao": null,
+    "total_correcoes": 0,
+    "correcoes_por_tipo": {}
+  }
+}
