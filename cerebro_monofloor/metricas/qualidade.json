@@ -1,0 +1,48 @@
+{
+  "versao": "1.0",
+  "descricao": "Métricas de qualidade do Cérebro Monofloor",
+  "ultima_atualizacao": null,
+  
+  "metricas_atuais": {
+    "taxa_acerto_previsoes": {
+      "valor": null,
+      "meta": 0.85,
+      "status": "sem_dados",
+      "tendencia": null
+    },
+    "drift_margem": {
+      "valor": null,
+      "meta_max": 2.0,
+      "unidade": "pp",
+      "status": "sem_dados"
+    },
+    "alertas_uteis": {
+      "valor": null,
+      "meta": 0.80,
+      "total_avaliados": 0,
+      "status": "sem_dados"
+    },
+    "tempo_resposta": {
+      "valor_medio": null,
+      "meta_max": 30,
+      "unidade": "minutos",
+      "status": "sem_dados"
+    },
+    "cobertura_dados": {
+      "obras_com_dados_completos": null,
+      "total_obras": null,
+      "percentual": null,
+      "meta": 0.95
+    }
+  },
+  
+  "historico_semanal": [],
+  
+  "benchmarks_mercado": {
+    "fonte": "ISO 9001 / Six Sigma adaptado",
+    "taxa_acerto_excelente": 0.95,
+    "taxa_acerto_bom": 0.85,
+    "taxa_acerto_aceitavel": 0.75,
+    "taxa_acerto_critico": 0.60
+  }
+}
