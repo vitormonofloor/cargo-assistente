@@ -1,0 +1,55 @@
+{
+  "nome": "Cérebro Monofloor",
+  "versao": "1.0.0",
+  "criado_em": "2026-04-01",
+  
+  "agentes": {
+    "operacional": {
+      "nome": "Agente Operacional",
+      "fontes": ["pipefy", "monofloor_painel"],
+      "horario": "07:30",
+      "ativo": true
+    },
+    "financeiro": {
+      "nome": "Agente Financeiro", 
+      "fontes": ["omie_upload", "d4sign"],
+      "horario": "manual",
+      "ativo": true
+    }
+  },
+  
+  "cerebro": {
+    "horario_processamento": "08:00",
+    "claude_model": "claude-sonnet-4-20250514",
+    "max_tokens": 4096
+  },
+  
+  "saidas": {
+    "dashboard": {
+      "tipo": "github_pages",
+      "repo": "vitormonofloor/cargo-assistente",
+      "arquivo": "relatorio_financeiro.html"
+    },
+    "telegram": {
+      "bot_token_env": "TELEGRAM_BOT_TOKEN",
+      "chat_ids": []
+    },
+    "drive": {
+      "pasta_raiz": "Monofloor_Cerebro"
+    }
+  },
+  
+  "metricas_qualidade": {
+    "taxa_acerto_meta": 0.85,
+    "drift_margem_max": 2.0,
+    "alertas_uteis_meta": 0.80,
+    "tempo_resposta_max_min": 30,
+    "cobertura_dados_meta": 0.95
+  },
+  
+  "feedback": {
+    "comandos_telegram": ["/corrigir", "/aprovar", "/status", "/ajuda"],
+    "auto_compare": true,
+    "guardar_historico_dias": 365
+  }
+}
