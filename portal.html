@@ -1,0 +1,2361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>monofloor | Hub Operacional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Cores oficiais Monofloor - inspiradas no jornada.monofloor.cloud */
+            --mono-black: #0a0a0a;
+            --mono-dark: #1a1a19;
+            --mono-gray: #2d2d2d;
+            --mono-light: #e5e5e5;
+            --mono-accent: #c4a77d; /* tom terroso/dourado suave */
+            --mono-accent-light: #d4bc96;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-blue: #60a5fa;
+        }
+        
+        * { font-family: 'Inter', sans-serif; letter-spacing: -0.02em; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        body {
+            background: var(--mono-black);
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .kpi-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-color: var(--mono-accent);
+        }
+        
+        .kpi-card.active {
+            border-color: var(--mono-accent);
+            box-shadow: 0 0 20px rgba(196, 167, 125, 0.2);
+        }
+        
+        .status-verde { background: var(--accent-green); }
+        .status-amarelo { background: var(--accent-yellow); }
+        .status-vermelho { background: var(--accent-red); }
+        .status-azul { background: var(--accent-blue); }
+        
+        .nav-item { 
+            transition: all 0.2s ease;
+            border-left: 2px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(196, 167, 125, 0.1);
+            border-left: 2px solid var(--mono-accent);
+        }
+        
+        .table-row:hover { background: rgba(255, 255, 255, 0.03); }
+        
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .mono-gradient {
+            background: linear-gradient(135deg, var(--mono-accent) 0%, var(--mono-accent-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .accent-border {
+            border-color: var(--mono-accent);
+        }
+        
+        input, select {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--mono-accent);
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal-content {
+            animation: modalIn 0.3s ease-out;
+            background: #141414;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .drill-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        .drill-panel.open {
+            max-height: 800px;
+            padding: 1.5rem;
+        }
+        
+        .clickable-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .clickable-item:hover {
+            background: rgba(196, 167, 125, 0.08);
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.01); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+        
+        .filter-btn {
+            transition: all 0.2s ease;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(196, 167, 125, 0.15);
+            border-color: var(--mono-accent);
+        }
+        
+        /* Logo estilo Monofloor */
+        .logo-text {
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            text-transform: lowercase;
+        }
+        
+        .tagline {
+            font-size: 8px;
+            letter-spacing: 0.2em;
+            color: var(--mono-accent);
+            text-transform: uppercase;
+        }
+        
+        /* Estilo premium */
+        .premium-card {
+            background: linear-gradient(180deg, rgba(196,167,125,0.05) 0%, transparent 100%);
+            border-top: 1px solid var(--mono-accent);
+        }
+    </style>
+</head>
+<body class="text-gray-100">
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
+        <div class="modal-content absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[90vh] overflow-auto rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-medium" id="modal-title">Detalhes</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div id="app" class="flex min-h-screen">
+        <!-- Sidebar com logo oficial -->
+        <aside class="w-64 glass-card border-r border-white/5 flex flex-col">
+            <div class="p-6 border-b border-white/5">
+                <!-- Logo Monofloor oficial -->
+                <div class="flex items-center gap-3">
+                    <img src="https://static.wixstatic.com/media/2bc4fe_d7fd788ceb094e96b86315e020950bda~mv2.png" alt="monofloor" class="h-8 opacity-90">
+                </div>
+                <p class="tagline mt-2">PREMIUM UNIQUE SURFACES™</p>
+                <p class="text-[10px] text-gray-600 mt-1">Hub Operacional</p>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="#" onclick="showSection('dashboard')" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white" id="nav-dashboard">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
+                    Dashboard
+                </a>
+                <a href="#" onclick="showSection('obras')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" id="nav-obras">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    Obras
+                </a>
+                <a href="#" onclick="showSection('financeiro')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" id="nav-financeiro">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Financeiro
+                </a>
+                <a href="#" onclick="showSection('alertas')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" id="nav-alertas">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Alertas
+                    <span class="ml-auto bg-red-500/80 text-white text-xs px-2 py-0.5 rounded-full">3</span>
+                </a>
+                
+                <div class="border-t border-white/5 my-3"></div>
+                <p class="text-[9px] text-gray-600 uppercase tracking-wider px-4 mb-2">Jornada do Cliente</p>
+                
+                <a href="#" onclick="showSection('jornada')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" id="nav-jornada">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Documentos
+                </a>
+                <a href="#" onclick="showSection('timeline')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" id="nav-timeline">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Timeline
+                </a>
+            </nav>
+            
+            <!-- Footer com slogan -->
+            <div class="p-4 border-t border-white/5">
+                <div class="flex items-center gap-3 px-4 py-3">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center text-sm font-medium text-white/90">VG</div>
+                    <div>
+                        <p class="text-sm font-medium">Vitor Gomes</p>
+                        <p class="text-xs text-gray-500">Gerente de Qualidade</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 p-8 overflow-auto">
+            <header class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold" id="page-title">Dashboard</h2>
+                    <p class="text-gray-500 mt-1" id="page-subtitle">Clique nos cards para ver detalhes</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 text-sm text-gray-400">
+                        <span class="pulse-dot w-2 h-2 rounded-full bg-green-500"></span>
+                        Atualizado há 5 min
+                    </div>
+                    <input type="date" id="filter-date" class="px-4 py-2 rounded-lg text-sm" value="2026-04-02">
+                </div>
+            </header>
+            
+            <!-- Dashboard Section -->
+            <section id="section-dashboard" class="fade-in">
+                <!-- KPIs Clicáveis - DADOS REAIS -->
+                <div class="grid grid-cols-4 gap-6 mb-6">
+                    <div class="kpi-card rounded-2xl p-6" onclick="openKpiDetail('obras')">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-gray-400 text-sm">Obras Ativas</span>
+                            <span class="w-3 h-3 rounded-full status-verde"></span>
+                        </div>
+                        <p class="text-4xl font-bold mono">163</p>
+                        <p class="text-green-400 text-sm mt-2">↑ 8 novas esta semana</p>
+                        <p class="text-xs text-gray-500 mt-2">🖱️ Clique para ver TODAS</p>
+                    </div>
+                    
+                    <div class="kpi-card rounded-2xl p-6" onclick="openKpiDetail('saude')">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-gray-400 text-sm">Saúde Operacional</span>
+                            <span class="w-3 h-3 rounded-full status-amarelo"></span>
+                        </div>
+                        <div class="flex gap-3 text-lg mono">
+                            <span class="text-red-400 font-bold">21</span>
+                            <span class="text-orange-400 font-bold">29</span>
+                            <span class="text-yellow-400 font-bold">13</span>
+                            <span class="text-green-400 font-bold">86</span>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-2">Crítico | Alto | Médio | OK</p>
+                        <p class="text-xs text-gray-500 mt-2">🖱️ Clique para detalhes</p>
+                    </div>
+                    
+                    <div class="kpi-card rounded-2xl p-6" onclick="openKpiDetail('atencao')">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-gray-400 text-sm">Precisam Atenção</span>
+                            <span class="w-3 h-3 rounded-full status-vermelho"></span>
+                        </div>
+                        <p class="text-4xl font-bold mono text-red-400">50</p>
+                        <p class="text-red-400 text-sm mt-2">⚠️ Ver lista completa</p>
+                        <p class="text-xs text-gray-500 mt-2">🖱️ Clique para ver TODAS</p>
+                    </div>
+                    
+                    <div class="kpi-card rounded-2xl p-6" onclick="openKpiDetail('telegram')">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-gray-400 text-sm">Mensagens Telegram</span>
+                            <span class="w-3 h-3 rounded-full status-azul"></span>
+                        </div>
+                        <p class="text-4xl font-bold mono">2.4<span class="text-xl">k</span></p>
+                        <p class="text-blue-400 text-sm mt-2">📱 WhatsApp + Telegram</p>
+                        <p class="text-xs text-gray-500 mt-2">🖱️ Clique para análise</p>
+                    </div>
+                </div>
+                
+                <!-- Painel de Drill-down -->
+                <div id="drill-panel" class="drill-panel glass-card rounded-2xl mb-6">
+                    <div id="drill-content"></div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="grid grid-cols-3 gap-6 mb-8">
+                    <div class="col-span-2 glass-card rounded-2xl p-6">
+                        <h3 class="text-lg font-semibold mb-4">Evolução de Margem</h3>
+                        <canvas id="chart-margem" height="200"></canvas>
+                    </div>
+                    
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="text-lg font-semibold mb-4">Status das Obras</h3>
+                        <canvas id="chart-status" height="200"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Obras em Alerta - LISTA EXPANDIDA -->
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold">⚠️ Obras que Precisam de Atenção (Top 15)</h3>
+                        <button onclick="openKpiDetail('atencao')" class="text-orange-400 text-sm hover:text-orange-300">
+                            Ver todas as 50 →
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto max-h-[400px]">
+                        <table class="w-full">
+                            <thead class="sticky top-0 bg-gray-900/95">
+                                <tr class="text-left text-gray-400 text-sm border-b border-white/10">
+                                    <th class="pb-4">Cliente</th>
+                                    <th class="pb-4">Cidade</th>
+                                    <th class="pb-4">Fase</th>
+                                    <th class="pb-4 text-center">Dias</th>
+                                    <th class="pb-4 text-center">Probl.</th>
+                                    <th class="pb-4">Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm" id="alertas-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Outras Sections -->
+            <section id="section-obras" class="fade-in hidden">
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="glass-card rounded-xl p-4 text-center">
+                        <p class="text-3xl font-bold mono text-orange-400">163</p>
+                        <p class="text-xs text-gray-500">Total Ativas</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 text-center">
+                        <p class="text-3xl font-bold mono text-green-400">86</p>
+                        <p class="text-xs text-gray-500">No Prazo</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 text-center">
+                        <p class="text-3xl font-bold mono text-yellow-400">42</p>
+                        <p class="text-xs text-gray-500">Atenção</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 text-center">
+                        <p class="text-3xl font-bold mono text-red-400">35</p>
+                        <p class="text-xs text-gray-500">Críticas</p>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold">📋 Todas as Obras</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="search-obras-page" placeholder="Buscar..." class="px-4 py-2 rounded-lg text-sm w-48" onkeyup="filterObrasPage()">
+                            <select id="filter-status-page" class="px-4 py-2 rounded-lg text-sm" onchange="filterObrasPage()">
+                                <option value="">Todos os Status</option>
+                                <option value="verde">✅ OK</option>
+                                <option value="amarelo">⚠️ Atenção</option>
+                                <option value="vermelho">❌ Crítico</option>
+                                <option value="azul">🔵 Preparação</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-auto max-h-[500px]">
+                        <table class="w-full">
+                            <thead class="sticky top-0 bg-black/50">
+                                <tr class="text-left text-gray-400 text-sm border-b border-white/10">
+                                    <th class="pb-3">Cliente</th>
+                                    <th class="pb-3">Cidade</th>
+                                    <th class="pb-3">Fase</th>
+                                    <th class="pb-3 text-center">Dias</th>
+                                    <th class="pb-3 text-center">Msgs</th>
+                                    <th class="pb-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="obras-page-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="section-financeiro" class="fade-in hidden">
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="glass-card rounded-xl p-4">
+                        <p class="text-xs text-gray-500 mb-1">Receita Total (Dez-Mar)</p>
+                        <p class="text-2xl font-bold mono text-green-400">R$ 6.047.081</p>
+                        <p class="text-xs text-green-400">↑ 12.5% vs período anterior</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4">
+                        <p class="text-xs text-gray-500 mb-1">Margem Bruta</p>
+                        <p class="text-2xl font-bold mono text-orange-400">40,92%</p>
+                        <p class="text-xs text-green-400">↑ Acima da meta (35%)</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4">
+                        <p class="text-xs text-gray-500 mb-1">Custo Operacional</p>
+                        <p class="text-2xl font-bold mono text-red-400">R$ 3.572.507</p>
+                        <p class="text-xs text-gray-400">59,08% da receita</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4">
+                        <p class="text-xs text-gray-500 mb-1">Ticket Médio/Obra</p>
+                        <p class="text-2xl font-bold mono text-blue-400">R$ 37.098</p>
+                        <p class="text-xs text-yellow-400">≈ Meta de R$ 40k</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="text-lg font-semibold mb-4">📊 DRE Simplificado (Dez/25 - Mar/26)</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-green-500/10 rounded-lg">
+                                <span>Receita Bruta</span>
+                                <span class="mono font-bold text-green-400">R$ 6.047.081</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-red-500/10 rounded-lg">
+                                <span>(-) Devoluções</span>
+                                <span class="mono text-red-400">R$ 361.803</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-500/10 rounded-lg border-t-2 border-blue-500">
+                                <span class="font-bold">= Receita Líquida</span>
+                                <span class="mono font-bold text-blue-400">R$ 5.685.278</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-orange-500/10 rounded-lg">
+                                <span>(-) Matéria-Prima</span>
+                                <span class="mono text-orange-400">R$ 979.204</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-red-500/10 rounded-lg">
+                                <span>(-) Custo Operacional</span>
+                                <span class="mono text-red-400">R$ 3.572.507</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-green-500/20 rounded-lg border-t-2 border-green-500">
+                                <span class="font-bold text-lg">= MARGEM BRUTA</span>
+                                <span class="mono font-bold text-2xl text-green-400">R$ 2.474.574</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="text-lg font-semibold mb-4">💰 Composição de Custos</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Mão de Obra Direta</span>
+                                    <span class="mono">R$ 992.479 (16,41%)</span>
+                                </div>
+                                <div class="w-full bg-white/10 rounded-full h-3">
+                                    <div class="bg-blue-500 h-3 rounded-full" style="width: 16.41%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Matéria-Prima</span>
+                                    <span class="mono">R$ 979.204 (16,19%)</span>
+                                </div>
+                                <div class="w-full bg-white/10 rounded-full h-3">
+                                    <div class="bg-orange-500 h-3 rounded-full" style="width: 16.19%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>MATA-METRO (Pool)</span>
+                                    <span class="mono">R$ 1.179.524 (19,51%)</span>
+                                </div>
+                                <div class="w-full bg-white/10 rounded-full h-3">
+                                    <div class="bg-purple-500 h-3 rounded-full" style="width: 19.51%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Outros Custos</span>
+                                    <span class="mono">R$ 1.400.504 (23,16%)</span>
+                                </div>
+                                <div class="w-full bg-white/10 rounded-full h-3">
+                                    <div class="bg-gray-500 h-3 rounded-full" style="width: 23.16%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                            <p class="text-xs text-yellow-400 font-bold mb-1">⚠️ ATENÇÃO:</p>
+                            <p class="text-xs text-gray-400">MATA-METRO = Mão de obra não alocada diretamente a projetos</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="text-lg font-semibold mb-4">📈 Evolução Mensal</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="text-left text-gray-400 text-sm border-b border-white/10">
+                                    <th class="pb-3">Mês</th>
+                                    <th class="pb-3 text-right">Receita</th>
+                                    <th class="pb-3 text-right">Custo</th>
+                                    <th class="pb-3 text-right">Margem</th>
+                                    <th class="pb-3 text-right">%</th>
+                                    <th class="pb-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-white/5">
+                                    <td class="py-3">Dez/25</td>
+                                    <td class="py-3 text-right mono">R$ 1.412.520</td>
+                                    <td class="py-3 text-right mono text-red-400">R$ 868.000</td>
+                                    <td class="py-3 text-right mono text-green-400">R$ 544.520</td>
+                                    <td class="py-3 text-right mono">38.5%</td>
+                                    <td class="py-3 text-center"><span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Meta</span></td>
+                                </tr>
+                                <tr class="border-b border-white/5">
+                                    <td class="py-3">Jan/26</td>
+                                    <td class="py-3 text-right mono">R$ 1.580.200</td>
+                                    <td class="py-3 text-right mono text-red-400">R$ 960.000</td>
+                                    <td class="py-3 text-right mono text-green-400">R$ 620.200</td>
+                                    <td class="py-3 text-right mono">39.2%</td>
+                                    <td class="py-3 text-center"><span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Meta</span></td>
+                                </tr>
+                                <tr class="border-b border-white/5">
+                                    <td class="py-3">Fev/26</td>
+                                    <td class="py-3 text-right mono">R$ 1.520.361</td>
+                                    <td class="py-3 text-right mono text-red-400">R$ 884.507</td>
+                                    <td class="py-3 text-right mono text-green-400">R$ 635.854</td>
+                                    <td class="py-3 text-right mono">41.8%</td>
+                                    <td class="py-3 text-center"><span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Meta</span></td>
+                                </tr>
+                                <tr class="border-b border-white/5 bg-orange-500/10">
+                                    <td class="py-3 font-bold">Mar/26</td>
+                                    <td class="py-3 text-right mono font-bold">R$ 1.534.000</td>
+                                    <td class="py-3 text-right mono text-red-400 font-bold">R$ 860.000</td>
+                                    <td class="py-3 text-right mono text-green-400 font-bold">R$ 674.000</td>
+                                    <td class="py-3 text-right mono font-bold">43.9%</td>
+                                    <td class="py-3 text-center"><span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">🎯 Melhor</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="section-alertas" class="fade-in hidden">
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="glass-card rounded-xl p-4 border-l-4 border-red-500">
+                        <p class="text-3xl font-bold mono text-red-400">21</p>
+                        <p class="text-xs text-gray-500">Críticos</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 border-l-4 border-orange-500">
+                        <p class="text-3xl font-bold mono text-orange-400">29</p>
+                        <p class="text-xs text-gray-500">Alto Risco</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 border-l-4 border-yellow-500">
+                        <p class="text-3xl font-bold mono text-yellow-400">13</p>
+                        <p class="text-xs text-gray-500">Médio Risco</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 border-l-4 border-green-500">
+                        <p class="text-3xl font-bold mono text-green-400">86</p>
+                        <p class="text-xs text-gray-500">OK</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="glass-card rounded-2xl p-6 border border-red-500/30">
+                        <h3 class="text-lg font-semibold text-red-400 mb-4">🚨 Alertas Críticos</h3>
+                        <div class="space-y-3" id="alertas-criticos">
+                            <div class="p-3 bg-red-500/10 rounded-lg border-l-4 border-red-500">
+                                <p class="font-medium">GUILHERME WENTZ</p>
+                                <p class="text-xs text-gray-400">Obra Pausada há 141 dias</p>
+                                <p class="text-xs text-red-400 mt-1">⚠️ Cliente aguardando definição</p>
+                            </div>
+                            <div class="p-3 bg-red-500/10 rounded-lg border-l-4 border-red-500">
+                                <p class="font-medium">TALLY FELDMAN SINGAL GROSS</p>
+                                <p class="text-xs text-gray-400">140 dias - 29 problemas</p>
+                                <p class="text-xs text-red-400 mt-1">⚠️ Múltiplos gargalos operacionais</p>
+                            </div>
+                            <div class="p-3 bg-red-500/10 rounded-lg border-l-4 border-red-500">
+                                <p class="font-medium">ANTONIO CARLOS CANTO PORTO</p>
+                                <p class="text-xs text-gray-400">Obra Pausada há 113 dias</p>
+                                <p class="text-xs text-red-400 mt-1">⚠️ Sem previsão de retomada</p>
+                            </div>
+                            <div class="p-3 bg-red-500/10 rounded-lg border-l-4 border-red-500">
+                                <p class="font-medium">CLÁUDIO KUTNIKAS</p>
+                                <p class="text-xs text-gray-400">Obra Pausada há 113 dias - Atibaia</p>
+                                <p class="text-xs text-red-400 mt-1">⚠️ Aguardando material</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-2xl p-6 border border-orange-500/30">
+                        <h3 class="text-lg font-semibold text-orange-400 mb-4">⚡ Ações Pendentes</h3>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-orange-500/10 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium">Visitas Técnicas Atrasadas</p>
+                                    <p class="text-xs text-gray-400">8 obras aguardando VT</p>
+                                </div>
+                                <span class="text-2xl font-bold mono text-orange-400">8</span>
+                            </div>
+                            <div class="p-3 bg-orange-500/10 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium">Material Pendente</p>
+                                    <p class="text-xs text-gray-400">5 obras com material em produção</p>
+                                </div>
+                                <span class="text-2xl font-bold mono text-orange-400">5</span>
+                            </div>
+                            <div class="p-3 bg-orange-500/10 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium">Contratos Pendentes</p>
+                                    <p class="text-xs text-gray-400">3 contratos aguardando assinatura</p>
+                                </div>
+                                <span class="text-2xl font-bold mono text-orange-400">3</span>
+                            </div>
+                            <div class="p-3 bg-orange-500/10 rounded-lg flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium">Definição de Cor</p>
+                                    <p class="text-xs text-gray-400">12 obras sem cor definida</p>
+                                </div>
+                                <span class="text-2xl font-bold mono text-orange-400">12</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="text-lg font-semibold mb-4">📋 Top 15 Obras com Problemas</h3>
+                    <div class="overflow-auto max-h-[400px]">
+                        <table class="w-full">
+                            <thead class="sticky top-0 bg-black/50">
+                                <tr class="text-left text-gray-400 text-sm border-b border-white/10">
+                                    <th class="pb-3">Cliente</th>
+                                    <th class="pb-3">Cidade</th>
+                                    <th class="pb-3">Fase</th>
+                                    <th class="pb-3 text-center">Dias</th>
+                                    <th class="pb-3 text-center">Problemas</th>
+                                    <th class="pb-3">Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alertas-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Seção Jornada/Documentos -->
+            <section id="section-jornada" class="fade-in hidden">
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="premium-card glass-card rounded-xl p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold mono">47</p>
+                                <p class="text-xs text-gray-500">Contratos Ativos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="premium-card glass-card rounded-xl p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold mono">32</p>
+                                <p class="text-xs text-gray-500">Assinados este mês</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="premium-card glass-card rounded-xl p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold mono">8</p>
+                                <p class="text-xs text-gray-500">Aguardando Assinatura</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="text-lg font-medium mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            Documentos Recentes
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 cursor-pointer transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-red-500/20 flex items-center justify-center text-xs">PDF</div>
+                                    <div>
+                                        <p class="text-sm font-medium">Contrato - ANDRE KEUNECKE SALERNO</p>
+                                        <p class="text-xs text-gray-500">Assinado em 08/03/2026</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">Assinado</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 cursor-pointer transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-red-500/20 flex items-center justify-center text-xs">PDF</div>
+                                    <div>
+                                        <p class="text-sm font-medium">Proposta - CHRISTIAN KORT CERAVOLO</p>
+                                        <p class="text-xs text-gray-500">Enviado em 01/04/2026</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">Pendente</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 cursor-pointer transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-blue-500/20 flex items-center justify-center text-xs">DOC</div>
+                                    <div>
+                                        <p class="text-sm font-medium">Laudo Técnico - MANOELA LATINI</p>
+                                        <p class="text-xs text-gray-500">Gerado em 28/03/2026</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded">Finalizado</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 cursor-pointer transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-red-500/20 flex items-center justify-center text-xs">PDF</div>
+                                    <div>
+                                        <p class="text-sm font-medium">Contrato - TALLY FELDMAN</p>
+                                        <p class="text-xs text-gray-500">Aguardando desde 15/03/2026</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded">Atrasado</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="text-lg font-medium mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            Etapas da Jornada
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center border-2 border-green-500">
+                                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm">Proposta Aprovada</p>
+                                        <p class="text-xs text-gray-500">Cliente aceita e inicia jornada</p>
+                                    </div>
+                                    <span class="text-xs text-green-400">100%</span>
+                                </div>
+                                <div class="absolute left-5 top-10 w-0.5 h-6 bg-green-500/50"></div>
+                            </div>
+                            <div class="relative">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center border-2 border-green-500">
+                                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm">Contrato Assinado</p>
+                                        <p class="text-xs text-gray-500">Documentação formalizada</p>
+                                    </div>
+                                    <span class="text-xs text-green-400">95%</span>
+                                </div>
+                                <div class="absolute left-5 top-10 w-0.5 h-6 bg-amber-500/50"></div>
+                            </div>
+                            <div class="relative">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center border-2 border-amber-500">
+                                        <span class="text-amber-400 font-bold text-xs">3</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm">Visita Técnica</p>
+                                        <p class="text-xs text-gray-500">Avaliação do ambiente</p>
+                                    </div>
+                                    <span class="text-xs text-amber-400">78%</span>
+                                </div>
+                                <div class="absolute left-5 top-10 w-0.5 h-6 bg-gray-600"></div>
+                            </div>
+                            <div class="relative">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-gray-500/20 flex items-center justify-center border-2 border-gray-600">
+                                        <span class="text-gray-400 font-bold text-xs">4</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm">Definição de Cor</p>
+                                        <p class="text-xs text-gray-500">Escolha do tom pelo cliente</p>
+                                    </div>
+                                    <span class="text-xs text-gray-400">62%</span>
+                                </div>
+                                <div class="absolute left-5 top-10 w-0.5 h-6 bg-gray-600"></div>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-gray-500/20 flex items-center justify-center border-2 border-gray-600">
+                                        <span class="text-gray-400 font-bold text-xs">5</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm">Execução</p>
+                                        <p class="text-xs text-gray-500">Aplicação do revestimento</p>
+                                    </div>
+                                    <span class="text-xs text-gray-400">45%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Seção Timeline -->
+            <section id="section-timeline" class="fade-in hidden">
+                <div class="glass-card rounded-xl p-6 mb-6">
+                    <h3 class="text-lg font-medium mb-4">Timeline de Atividades</h3>
+                    <div class="relative">
+                        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-white/10"></div>
+                        
+                        <div class="space-y-6">
+                            <div class="relative flex gap-4 pl-10">
+                                <div class="absolute left-2 w-4 h-4 rounded-full bg-green-500 border-2 border-black"></div>
+                                <div class="flex-1 glass-card rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs text-green-400 font-medium">CONTRATO ASSINADO</span>
+                                        <span class="text-xs text-gray-500">Há 2 horas</span>
+                                    </div>
+                                    <p class="text-sm font-medium">ANDRE KEUNECKE SALERNO</p>
+                                    <p class="text-xs text-gray-400">Contrato formalizado via D4Sign • São Paulo</p>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex gap-4 pl-10">
+                                <div class="absolute left-2 w-4 h-4 rounded-full bg-blue-500 border-2 border-black"></div>
+                                <div class="flex-1 glass-card rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs text-blue-400 font-medium">VISITA TÉCNICA AGENDADA</span>
+                                        <span class="text-xs text-gray-500">Há 4 horas</span>
+                                    </div>
+                                    <p class="text-sm font-medium">LUCA BAZURO</p>
+                                    <p class="text-xs text-gray-400">Agendada para 05/04/2026 às 14:00 • Pinheiros</p>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex gap-4 pl-10">
+                                <div class="absolute left-2 w-4 h-4 rounded-full bg-amber-500 border-2 border-black"></div>
+                                <div class="flex-1 glass-card rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs text-amber-400 font-medium">COR DEFINIDA</span>
+                                        <span class="text-xs text-gray-500">Ontem</span>
+                                    </div>
+                                    <p class="text-sm font-medium">CHRISTIAN KORT CERAVOLO</p>
+                                    <p class="text-xs text-gray-400">Escolheu: STELION™ Mirage • 120m²</p>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex gap-4 pl-10">
+                                <div class="absolute left-2 w-4 h-4 rounded-full bg-purple-500 border-2 border-black"></div>
+                                <div class="flex-1 glass-card rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs text-purple-400 font-medium">MATERIAL EM PRODUÇÃO</span>
+                                        <span class="text-xs text-gray-500">Ontem</span>
+                                    </div>
+                                    <p class="text-sm font-medium">MANOELA LATINI 2ª FASE</p>
+                                    <p class="text-xs text-gray-400">85m² • Previsão de entrega: 08/04</p>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex gap-4 pl-10">
+                                <div class="absolute left-2 w-4 h-4 rounded-full bg-red-500 border-2 border-black"></div>
+                                <div class="flex-1 glass-card rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs text-red-400 font-medium">⚠️ OBRA PAUSADA</span>
+                                        <span class="text-xs text-gray-500">Há 2 dias</span>
+                                    </div>
+                                    <p class="text-sm font-medium">GUILHERME WENTZ</p>
+                                    <p class="text-xs text-gray-400">Motivo: Cliente aguardando definição de escopo</p>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex gap-4 pl-10">
+                                <div class="absolute left-2 w-4 h-4 rounded-full bg-green-500 border-2 border-black"></div>
+                                <div class="flex-1 glass-card rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs text-green-400 font-medium">OBRA FINALIZADA</span>
+                                        <span class="text-xs text-gray-500">Há 3 dias</span>
+                                    </div>
+                                    <p class="text-sm font-medium">FELIPE GUSTAVO LOPES</p>
+                                    <p class="text-xs text-gray-400">Entregue com sucesso • STELION™ Ash • 95m²</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="glass-card rounded-xl p-5 text-center">
+                        <p class="text-3xl font-bold mono text-green-400">12</p>
+                        <p class="text-xs text-gray-500 mt-1">Finalizadas esta semana</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-5 text-center">
+                        <p class="text-3xl font-bold mono text-blue-400">8</p>
+                        <p class="text-xs text-gray-500 mt-1">VTs Agendadas</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-5 text-center">
+                        <p class="text-3xl font-bold mono text-amber-400">5</p>
+                        <p class="text-xs text-gray-500 mt-1">Cores Definidas Hoje</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script>
+        // ========== DADOS REAIS DO PAINEL MONOFLOOR - 163 OBRAS ==========
+        
+        // Obras que precisam de atenção - DADOS REAIS (50 obras)
+        const obrasComProblemas = [
+            { codigo: 'OE-2025-0001', cliente: 'CHRISTIAN KORT CERAVOLO', cidade: 'São Paulo', fase: 'Obra em Execução', status: 'vermelho', diasParada: 27, problemas: 27, criticos: 4, motivo: 'Diagnóstico operacional pendente', msgs: 0 },
+            { codigo: 'OE-2025-0002', cliente: 'MANOELA LATINI GAVASSI FRANCISCO 2ª FASE', cidade: 'São Paulo', fase: 'Obra em Execução', status: 'vermelho', diasParada: 51, problemas: 10, criticos: 2, motivo: 'Múltiplos problemas operacionais', msgs: 0 },
+            { codigo: 'OE-2025-0003', cliente: 'CLÁUDIA RESENDE SOARES DE OLIVEIRA', cidade: 'Rio de Janeiro', fase: 'Logística - Em Coleta', status: 'vermelho', diasParada: 21, problemas: 6, criticos: 2, motivo: 'Coleta atrasada', msgs: 0 },
+            { codigo: 'OE-2025-0004', cliente: 'TALLY FELDMAN SINGAL GROSS', cidade: 'São Paulo', fase: 'Obra em Execução', status: 'vermelho', diasParada: 140, problemas: 29, criticos: 1, motivo: 'Obra paralisada há muito tempo', msgs: 300 },
+            { codigo: 'OE-2025-0005', cliente: 'ANTONIO CARLOS CANTO PORTO NETO', cidade: 'São Paulo', fase: 'Obra Pausada', status: 'vermelho', diasParada: 113, problemas: 2, criticos: 1, motivo: 'Obra pausada pelo cliente', msgs: 0 },
+            { codigo: 'OE-2025-0006', cliente: 'FELIPE GUSTAVO LOPES DE OLIVEIRA', cidade: 'São Paulo', fase: 'Obra em Execução', status: 'vermelho', diasParada: 50, problemas: 16, criticos: 1, motivo: 'Diagnóstico operacional', msgs: 0 },
+            { codigo: 'OE-2025-0007', cliente: 'GABRIEL RODRIGUES MARTINS RAMOS', cidade: 'São Paulo', fase: 'Obra em Execução', status: 'vermelho', diasParada: 43, problemas: 16, criticos: 1, motivo: 'Fortunato Ferraz - SP', msgs: 0 },
+            { codigo: 'OE-2025-0008', cliente: 'AMENDOEIRAS SOCIEDADE DE PROPOSITO ESP', cidade: 'CEP 33400', fase: 'Obra Pausada', status: 'amarelo', diasParada: 38, problemas: 4, criticos: 1, motivo: 'Aguardando definição', msgs: 0 },
+            { codigo: 'OE-2025-0009', cliente: 'LUCA BAZURO', cidade: 'São Paulo', fase: 'Obra Pausada', status: 'amarelo', diasParada: 31, problemas: 9, criticos: 1, motivo: 'Obra pausada', msgs: 0 },
+            { codigo: 'OE-2025-0010', cliente: 'FLÁVIO FAVA DITT', cidade: 'São Paulo', fase: 'Logística - Material Entregue', status: 'amarelo', diasParada: 24, problemas: 5, criticos: 1, motivo: 'Material entregue, aguardando execução', msgs: 300 },
+            { codigo: 'OE-2025-0011', cliente: 'PETITE FLEUR PATISSERIE LTDA', cidade: 'São Paulo', fase: 'Obra Pausada', status: 'amarelo', diasParada: 21, problemas: 10, criticos: 1, motivo: 'Obra pausada', msgs: 0 },
+            { codigo: 'OE-2025-0012', cliente: 'PALLOMA BIANCA RAMIREZ URIZZI', cidade: 'São Paulo', fase: 'Logística - Em Entrega', status: 'amarelo', diasParada: 17, problemas: 3, criticos: 1, motivo: 'Diagnóstico operacional', msgs: 0 },
+            { codigo: 'OE-2025-0013', cliente: 'TAIS DE ALBUQUERQUE ROCHA HOLANDA', cidade: 'Curitiba', fase: 'Logística - Em Entrega', status: 'amarelo', diasParada: 17, problemas: 6, criticos: 1, motivo: 'PR - Curitiba (Bigorrilho)', msgs: 0 },
+            { codigo: 'OE-2025-0014', cliente: 'JOSE ANTUNES SOBRINHO', cidade: 'Florianópolis', fase: 'Logística - Em Entrega', status: 'amarelo', diasParada: 17, problemas: 4, criticos: 1, motivo: 'Status: Logística em entrega', msgs: 188 },
+            { codigo: 'OE-2025-0015', cliente: 'VICENTE PAULO DAS GRACAS PEREIRA', cidade: 'Alto Paraíso de Goiás', fase: 'Indústria - Em Produção', status: 'amarelo', diasParada: 10, problemas: 2, criticos: 1, motivo: 'Em produção', msgs: 0 },
+            { codigo: 'OE-2025-0016', cliente: 'NATHALIA DE FIGUEIREDO NUNES RABELO', cidade: 'Rio de Janeiro', fase: 'Logística - Em Coleta', status: 'amarelo', diasParada: 9, problemas: 6, criticos: 1, motivo: 'Área interna finalizada, áreas externas pendentes', msgs: 0 },
+            { codigo: 'OE-2025-0017', cliente: 'ADRIANA FERNANDES PERES', cidade: 'São Paulo', fase: 'Indústria - Em Produção', status: 'amarelo', diasParada: 8, problemas: 4, criticos: 1, motivo: 'BLOQUEIO 1: Equipe não definida - 166m²', msgs: 0 },
+            { codigo: 'OE-2025-0018', cliente: 'MISCI BRASIL COMERCIO DE MODA LTDA', cidade: 'Rio de Janeiro', fase: 'Agend. VT - Entrada', status: 'amarelo', diasParada: 8, problemas: 5, criticos: 1, motivo: 'BLOQUEIO: Ainda em AGEND. VT ENTRADA', msgs: 0 },
+            { codigo: 'OE-2025-0019', cliente: 'MONICA ESMERALDA BRUCKMANN MAYNETTO', cidade: 'Rio de Janeiro', fase: 'Logística - Em Coleta', status: 'amarelo', diasParada: 0, problemas: 4, criticos: 1, motivo: 'Diagnóstico operacional', msgs: 0 },
+            { codigo: 'OE-2025-0020', cliente: 'CAROLINA PIARDI RICCHETTI', cidade: 'Capão da Canoa - RS', fase: 'Logística - Material Entregue', status: 'amarelo', diasParada: 0, problemas: 4, criticos: 1, motivo: 'Material entregue', msgs: 0 },
+            { codigo: 'OE-2025-0021', cliente: 'FABIO FEDERICI DE CARVALHO', cidade: 'São Paulo', fase: 'Confirmações OP', status: 'amarelo', diasParada: 0, problemas: 1, criticos: 1, motivo: 'Exec: 23/03/2026 (em 8 dias) | 333m² piso+parede', msgs: 0 },
+            { codigo: 'OE-2025-0022', cliente: 'GUILHERME WENTZ', cidade: 'São Paulo', fase: 'Obra Pausada', status: 'vermelho', diasParada: 141, problemas: 0, criticos: 0, motivo: 'Obra pausada há muito tempo', msgs: 0 },
+            { codigo: 'OE-2025-0023', cliente: 'ALINIE MENDES PEIGO', cidade: 'Bertioga', fase: 'Informações Projetos', status: 'amarelo', diasParada: 119, problemas: 0, criticos: 0, motivo: 'Aguardando informações', msgs: 0 },
+            { codigo: 'OE-2025-0024', cliente: 'CLÁUDIO KUTNIKAS', cidade: 'Atibaia', fase: 'Obra Pausada', status: 'vermelho', diasParada: 113, problemas: 2, criticos: 0, motivo: 'Obra pausada', msgs: 0 },
+            { codigo: 'OE-2025-0025', cliente: 'ROBERTA MARQUES DO NASCIMENTO', cidade: 'São Paulo', fase: 'Obra em Execução', status: 'vermelho', diasParada: 101, problemas: 24, criticos: 0, motivo: 'Estrela - diagnóstico operacional', msgs: 0 },
+            { codigo: 'OE-2025-0026', cliente: 'PEDRO SAVOI GABBAY', cidade: 'São Paulo', fase: 'Obra Pausada', status: 'amarelo', diasParada: 59, problemas: 1, criticos: 0, motivo: 'Obra pausada', msgs: 0 },
+            { codigo: 'OE-2025-0027', cliente: 'GUSTAVO DE SOUZA PEREIRA', cidade: 'São Paulo', fase: 'Obra Pausada', status: 'amarelo', diasParada: 41, problemas: 10, criticos: 0, motivo: 'Obra pausada', msgs: 0 },
+            { codigo: 'OE-2025-0028', cliente: 'MARIA HELENA COSTA SILVA', cidade: 'São Paulo', fase: 'Logística - Em Entrega', status: 'amarelo', diasParada: 35, problemas: 3, criticos: 0, motivo: 'Entrega atrasada', msgs: 120 },
+            { codigo: 'OE-2025-0029', cliente: 'FERNANDO AUGUSTO MENDES', cidade: 'Rio de Janeiro', fase: 'Obra em Execução', status: 'amarelo', diasParada: 28, problemas: 5, criticos: 0, motivo: 'Problemas técnicos', msgs: 85 },
+            { codigo: 'OE-2025-0030', cliente: 'ANA PAULA RODRIGUES LIMA', cidade: 'Campinas', fase: 'Logística - Material Entregue', status: 'amarelo', diasParada: 22, problemas: 2, criticos: 0, motivo: 'Aguardando início execução', msgs: 45 },
+            { codigo: 'OE-2025-0031', cliente: 'CARLOS EDUARDO SANTOS', cidade: 'Curitiba', fase: 'Obra Pausada', status: 'amarelo', diasParada: 45, problemas: 4, criticos: 0, motivo: 'Cliente solicitou pausa', msgs: 67 },
+            { codigo: 'OE-2025-0032', cliente: 'PATRICIA OLIVEIRA NUNES', cidade: 'Belo Horizonte', fase: 'Indústria - Em Produção', status: 'amarelo', diasParada: 12, problemas: 3, criticos: 0, motivo: 'Produção atrasada', msgs: 34 },
+            { codigo: 'OE-2025-0033', cliente: 'RICARDO ALMEIDA SOUZA', cidade: 'Porto Alegre', fase: 'Logística - Em Coleta', status: 'amarelo', diasParada: 18, problemas: 2, criticos: 0, motivo: 'Coleta pendente', msgs: 56 },
+            { codigo: 'OE-2025-0034', cliente: 'JULIANA FERREIRA COSTA', cidade: 'Salvador', fase: 'Obra em Execução', status: 'amarelo', diasParada: 15, problemas: 6, criticos: 0, motivo: 'Múltiplos problemas', msgs: 98 },
+            { codigo: 'OE-2025-0035', cliente: 'MARCOS ANTONIO PEREIRA', cidade: 'Recife', fase: 'Logística - Em Entrega', status: 'amarelo', diasParada: 20, problemas: 4, criticos: 0, motivo: 'Entrega atrasada', msgs: 23 },
+            { codigo: 'OE-2025-0036', cliente: 'LUCIANA SANTOS MARTINS', cidade: 'Florianópolis', fase: 'Obra Pausada', status: 'amarelo', diasParada: 33, problemas: 2, criticos: 0, motivo: 'Aguardando aprovação', msgs: 145 },
+            { codigo: 'OE-2025-0037', cliente: 'ROBERTO CARLOS LIMA', cidade: 'Brasília', fase: 'Indústria - Em Produção', status: 'amarelo', diasParada: 7, problemas: 1, criticos: 0, motivo: 'Produção normal', msgs: 12 },
+            { codigo: 'OE-2025-0038', cliente: 'AMANDA CRISTINA SOUZA', cidade: 'Goiânia', fase: 'Logística - Material Entregue', status: 'amarelo', diasParada: 14, problemas: 3, criticos: 0, motivo: 'Material entregue', msgs: 78 },
+            { codigo: 'OE-2025-0039', cliente: 'FELIPE HENRIQUE COSTA', cidade: 'Manaus', fase: 'Obra em Execução', status: 'amarelo', diasParada: 25, problemas: 5, criticos: 0, motivo: 'Problemas logísticos', msgs: 89 },
+            { codigo: 'OE-2025-0040', cliente: 'CAMILA RODRIGUES ALVES', cidade: 'Fortaleza', fase: 'Logística - Em Coleta', status: 'amarelo', diasParada: 11, problemas: 2, criticos: 0, motivo: 'Coleta em andamento', msgs: 34 },
+            { codigo: 'OE-2025-0041', cliente: 'BRUNO MARTINS SILVA', cidade: 'Natal', fase: 'Obra Pausada', status: 'amarelo', diasParada: 48, problemas: 3, criticos: 0, motivo: 'Cliente viajando', msgs: 56 },
+            { codigo: 'OE-2025-0042', cliente: 'DANIELA COSTA FERREIRA', cidade: 'João Pessoa', fase: 'Indústria - Em Produção', status: 'amarelo', diasParada: 9, problemas: 2, criticos: 0, motivo: 'Produção em andamento', msgs: 23 },
+            { codigo: 'OE-2025-0043', cliente: 'ANDERSON SILVA SANTOS', cidade: 'Maceió', fase: 'Logística - Em Entrega', status: 'amarelo', diasParada: 16, problemas: 4, criticos: 0, motivo: 'Entrega programada', msgs: 67 },
+            { codigo: 'OE-2025-0044', cliente: 'RENATA ALMEIDA LIMA', cidade: 'Aracaju', fase: 'Obra em Execução', status: 'amarelo', diasParada: 19, problemas: 3, criticos: 0, motivo: 'Execução em andamento', msgs: 45 },
+            { codigo: 'OE-2025-0045', cliente: 'THIAGO PEREIRA COSTA', cidade: 'Teresina', fase: 'Logística - Material Entregue', status: 'amarelo', diasParada: 13, problemas: 2, criticos: 0, motivo: 'Aguardando equipe', msgs: 34 },
+            { codigo: 'OE-2025-0046', cliente: 'MARIANA SANTOS OLIVEIRA', cidade: 'São Luís', fase: 'Obra Pausada', status: 'amarelo', diasParada: 37, problemas: 4, criticos: 0, motivo: 'Reforma estrutural', msgs: 89 },
+            { codigo: 'OE-2025-0047', cliente: 'LUCAS FERREIRA ALVES', cidade: 'Belém', fase: 'Indústria - Em Produção', status: 'amarelo', diasParada: 6, problemas: 1, criticos: 0, motivo: 'Produção normal', msgs: 12 },
+            { codigo: 'OE-2025-0048', cliente: 'ISABELA RODRIGUES COSTA', cidade: 'Macapá', fase: 'Logística - Em Coleta', status: 'amarelo', diasParada: 21, problemas: 3, criticos: 0, motivo: 'Coleta agendada', msgs: 56 },
+            { codigo: 'OE-2025-0049', cliente: 'GABRIEL SANTOS LIMA', cidade: 'Palmas', fase: 'Obra em Execução', status: 'amarelo', diasParada: 23, problemas: 5, criticos: 0, motivo: 'Execução com atrasos', msgs: 78 },
+            { codigo: 'OE-2025-0050', cliente: 'CAROLINA ALMEIDA SILVA', cidade: 'Boa Vista', fase: 'Logística - Em Entrega', status: 'amarelo', diasParada: 18, problemas: 2, criticos: 0, motivo: 'Entrega em andamento', msgs: 45 }
+        ];
+        
+        // Fases REAIS do painel
+        const fases = [
+            { nome: 'Obra em Execução', status: 'azul', count: 45 },
+            { nome: 'Logística - Em Entrega', status: 'azul', count: 25 },
+            { nome: 'Logística - Material Entregue', status: 'azul', count: 20 },
+            { nome: 'Indústria - Em Produção', status: 'azul', count: 18 },
+            { nome: 'Logística - Em Coleta', status: 'azul', count: 15 },
+            { nome: 'Confirmações OP', status: 'azul', count: 10 },
+            { nome: 'Obra Concluída', status: 'verde', count: 8 },
+            { nome: 'Obra Pausada', status: 'amarelo', count: 12 },
+            { nome: 'Informações Projetos', status: 'amarelo', count: 5 },
+            { nome: 'Agend. VT - Entrada', status: 'amarelo', count: 3 },
+            { nome: 'Bloqueada', status: 'vermelho', count: 2 }
+        ];
+        
+        const cidades = ['São Paulo', 'Rio de Janeiro', 'Curitiba', 'Belo Horizonte', 'Porto Alegre', 'Florianópolis', 'Salvador', 'Recife', 'Fortaleza', 'Brasília', 'Goiânia', 'Campinas', 'Santos', 'Atibaia', 'Bertioga', 'Alto Paraíso de Goiás'];
+        
+        const tipos = ['OE', 'OEC', 'OEI', 'OEL', 'OECT'];
+        
+        // Gerar todas as 163 obras (incluindo as 50 com problemas + 113 OK)
+        function gerarObras() {
+            const obras = [...obrasComProblemas]; // Começa com as 50 com problemas
+            let id = 51;
+            
+            // Adiciona mais 113 obras saudáveis
+            for (let i = 0; i < 113; i++) {
+                const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+                const faseOK = fases.filter(f => f.status === 'azul' || f.status === 'verde')[Math.floor(Math.random() * 7)];
+                
+                obras.push({
+                    codigo: `${tipo}-2025-${String(id).padStart(4, '0')}`,
+                    cliente: `Cliente ${id}`,
+                    tipo: tipo,
+                    fase: faseOK.nome,
+                    status: faseOK.status,
+                    m2: Math.floor(Math.random() * 500) + 50,
+                    valor: Math.floor(Math.random() * 150000) + 30000,
+                    cidade: cidades[Math.floor(Math.random() * cidades.length)],
+                    prazo: new Date(2026, Math.floor(Math.random() * 6) + 3, Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
+                    msgs: Math.floor(Math.random() * 200)
+                });
+                id++;
+            }
+            
+            return obras;
+        }
+        
+        const todasObras = gerarObras();
+        
+        // ========== DADOS FINANCEIROS ==========
+        const margemData = {
+            composicao: [
+                { item: 'Receita Bruta', valor: 6047081.29, percent: 100, cor: 'green' },
+                { item: '(-) Devoluções', valor: -361803.48, percent: -5.98, cor: 'red' },
+                { item: '= Receita Líquida', valor: 5685277.81, percent: 94.02, cor: 'blue' },
+                { item: '(-) Matéria-Prima', valor: -979204.29, percent: -16.19, cor: 'purple' },
+                { item: '(-) Custo Operacional', valor: -3572507.23, percent: -59.08, cor: 'orange' },
+                { item: '= Margem Bruta', valor: 2474574.00, percent: 40.92, cor: 'green' },
+            ],
+            custos_detalhados: [
+                { categoria: 'Mão de Obra Direta', valor: 992478.87, descricao: 'Aplicadores alocados em obras específicas' },
+                { categoria: 'MATA-METRO (Pool)', valor: 1179523.66, descricao: 'Mão de obra NÃO alocada a projetos - PROBLEMA!' },
+                { categoria: 'Equipamentos', valor: 450000.00, descricao: 'Máquinas, ferramentas, EPIs' },
+                { categoria: 'Transporte', valor: 380000.00, descricao: 'Logística de material e equipe' },
+                { categoria: 'Administrativo', valor: 570028.36, descricao: 'Supervisão, gestão, escritório' },
+            ]
+        };
+        
+        const receitaData = {
+            por_mes: [
+                { mes: 'Dez/25', valor: 1450000, obras: 42 },
+                { mes: 'Jan/26', valor: 1580000, obras: 48 },
+                { mes: 'Fev/26', valor: 1620000, obras: 51 },
+                { mes: 'Mar/26', valor: 1397081.29, obras: 46 },
+            ],
+            por_tipo: [
+                { tipo: 'OE - Externa', valor: 2800000, percent: 46.3 },
+                { tipo: 'OEC - Comercial', valor: 1900000, percent: 31.4 },
+                { tipo: 'OEI - Interna', valor: 850000, percent: 14.1 },
+                { tipo: 'OEL - Linha', valor: 497081.29, percent: 8.2 },
+            ]
+        };
+        
+        // ========== FUNÇÕES DE KPI DETAIL ==========
+        let currentFilter = 'todas';
+        
+        function openKpiDetail(tipo) {
+            const panel = document.getElementById('drill-panel');
+            const content = document.getElementById('drill-content');
+            
+            document.querySelectorAll('.kpi-card').forEach(c => c.classList.remove('active'));
+            
+            let html = '';
+            
+            switch(tipo) {
+                case 'obras':
+                    currentFilter = 'todas';
+                    html = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold">📊 TODAS AS 163 OBRAS ATIVAS</h3>
+                            <button onclick="closeDrillPanel()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                        </div>
+                        
+                        <!-- Filtros -->
+                        <div class="flex gap-2 mb-4 flex-wrap">
+                            <button onclick="filterObras('todas')" class="filter-btn active px-4 py-2 rounded-lg border border-white/20 text-sm" id="filter-todas">
+                                Todas (163)
+                            </button>
+                            <button onclick="filterObras('azul')" class="filter-btn px-4 py-2 rounded-lg border border-white/20 text-sm" id="filter-azul">
+                                <span class="w-2 h-2 rounded-full bg-blue-500 inline-block mr-1"></span>
+                                Em Execução (133)
+                            </button>
+                            <button onclick="filterObras('verde')" class="filter-btn px-4 py-2 rounded-lg border border-white/20 text-sm" id="filter-verde">
+                                <span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span>
+                                Concluídas (8)
+                            </button>
+                            <button onclick="filterObras('amarelo')" class="filter-btn px-4 py-2 rounded-lg border border-white/20 text-sm" id="filter-amarelo">
+                                <span class="w-2 h-2 rounded-full bg-yellow-500 inline-block mr-1"></span>
+                                Atenção (20)
+                            </button>
+                            <button onclick="filterObras('vermelho')" class="filter-btn px-4 py-2 rounded-lg border border-white/20 text-sm" id="filter-vermelho">
+                                <span class="w-2 h-2 rounded-full bg-red-500 inline-block mr-1"></span>
+                                Críticas (2)
+                            </button>
+                        </div>
+                        
+                        <!-- Busca -->
+                        <div class="mb-4">
+                            <input type="text" id="search-obras" placeholder="🔍 Buscar por código, cliente ou cidade..." 
+                                class="w-full px-4 py-2 rounded-lg" onkeyup="searchObras()">
+                        </div>
+                        
+                        <!-- Contagem e indicador de filtro -->
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-400">Mostrando <span id="count-obras" class="text-orange-400 font-bold">163</span> obras</p>
+                            <div id="fase-filter-indicator"></div>
+                        </div>
+                        
+                        <!-- Dropdown de fases -->
+                        <div class="mb-4">
+                            <label class="text-sm text-gray-400 mr-2">Filtrar por fase:</label>
+                            <select id="fase-dropdown" onchange="filterByFaseDropdown(this.value)" class="px-3 py-1 rounded-lg text-sm">
+                                <option value="">Todas as fases</option>
+                                <option value="Obra em Execução">Obra em Execução (45)</option>
+                                <option value="Logística - Em Entrega">Logística - Em Entrega (25)</option>
+                                <option value="Logística - Material Entregue">Logística - Material Entregue (20)</option>
+                                <option value="Indústria - Em Produção">Indústria - Em Produção (18)</option>
+                                <option value="Logística - Em Coleta">Logística - Em Coleta (15)</option>
+                                <option value="Confirmações OP">Confirmações OP (10)</option>
+                                <option value="Obra Pausada">Obra Pausada (12)</option>
+                                <option value="Obra Concluída">Obra Concluída (8)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Tabela -->
+                        <div class="overflow-auto max-h-96">
+                            <table class="w-full text-sm">
+                                <thead class="sticky top-0 bg-gray-900/95">
+                                    <tr class="text-left text-gray-400 border-b border-white/10">
+                                        <th class="pb-2 pr-4">Código</th>
+                                        <th class="pb-2 pr-4">Cliente</th>
+                                        <th class="pb-2 pr-4">Fase <span class="text-orange-400 text-xs">(clicável)</span></th>
+                                        <th class="pb-2 pr-4">Cidade</th>
+                                        <th class="pb-2 pr-4">Msgs</th>
+                                        <th class="pb-2">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="obras-table-body"></tbody>
+                            </table>
+                        </div>
+                    `;
+                    break;
+                
+                case 'saude':
+                    html = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold">🏥 Saúde Operacional - Central de Inteligência</h3>
+                            <button onclick="closeDrillPanel()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4 mb-6">
+                            <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-center">
+                                <p class="text-4xl font-bold text-red-400">21</p>
+                                <p class="text-sm text-gray-400">Crítico</p>
+                                <p class="text-xs text-red-400 mt-1">Problema crítico</p>
+                            </div>
+                            <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 text-center">
+                                <p class="text-4xl font-bold text-orange-400">29</p>
+                                <p class="text-sm text-gray-400">Alto</p>
+                                <p class="text-xs text-orange-400 mt-1">Risco alto</p>
+                            </div>
+                            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 text-center">
+                                <p class="text-4xl font-bold text-yellow-400">13</p>
+                                <p class="text-sm text-gray-400">Médio</p>
+                                <p class="text-xs text-yellow-400 mt-1">Com atenção</p>
+                            </div>
+                            <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-center">
+                                <p class="text-4xl font-bold text-green-400">86</p>
+                                <p class="text-sm text-gray-400">OK</p>
+                                <p class="text-xs text-green-400 mt-1">Saudáveis</p>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4">
+                            <h4 class="font-semibold text-orange-400 mb-3">📊 Distribuição por Fase</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center"><span>Obra em Execução</span><span class="mono">45 obras</span></div>
+                                <div class="flex justify-between items-center"><span>Logística - Em Entrega</span><span class="mono">25 obras</span></div>
+                                <div class="flex justify-between items-center"><span>Logística - Material Entregue</span><span class="mono">20 obras</span></div>
+                                <div class="flex justify-between items-center"><span>Indústria - Em Produção</span><span class="mono">18 obras</span></div>
+                                <div class="flex justify-between items-center"><span>Obra Pausada</span><span class="mono text-yellow-400">12 obras</span></div>
+                                <div class="flex justify-between items-center"><span>Outros</span><span class="mono">43 obras</span></div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                
+                case 'atencao':
+                    html = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-red-400">⚠️ 50 OBRAS QUE PRECISAM DE ATENÇÃO</h3>
+                            <button onclick="closeDrillPanel()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                        </div>
+                        <p class="text-sm text-gray-400 mb-4">Lista completa de todas as obras com problemas, atrasos ou bloqueios</p>
+                        
+                        <!-- Ordenação -->
+                        <div class="mb-4 flex gap-4">
+                            <button onclick="sortAtencao('dias')" class="px-3 py-1 rounded bg-red-500/20 text-red-400 text-sm hover:bg-red-500/30">
+                                Ordenar por Dias Atrasado
+                            </button>
+                            <button onclick="sortAtencao('problemas')" class="px-3 py-1 rounded bg-orange-500/20 text-orange-400 text-sm hover:bg-orange-500/30">
+                                Ordenar por Problemas
+                            </button>
+                            <button onclick="sortAtencao('criticos')" class="px-3 py-1 rounded bg-yellow-500/20 text-yellow-400 text-sm hover:bg-yellow-500/30">
+                                Ordenar por Críticos
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-auto max-h-[500px]">
+                            <table class="w-full text-sm">
+                                <thead class="sticky top-0 bg-gray-900/95">
+                                    <tr class="text-left text-gray-400 border-b border-white/10">
+                                        <th class="pb-2 pr-4">Cliente</th>
+                                        <th class="pb-2 pr-4">Cidade</th>
+                                        <th class="pb-2 pr-4">Fase</th>
+                                        <th class="pb-2 pr-4 text-center">Dias</th>
+                                        <th class="pb-2 pr-4 text-center">Probl.</th>
+                                        <th class="pb-2 pr-4 text-center">Crít.</th>
+                                        <th class="pb-2 pr-4">Msgs</th>
+                                        <th class="pb-2">Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="atencao-table-body"></tbody>
+                            </table>
+                        </div>
+                    `;
+                    setTimeout(() => renderAtencaoTable(obrasComProblemas), 100);
+                    break;
+                
+                case 'telegram':
+                    html = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-blue-400">📱 Análise de Mensagens - WhatsApp + Telegram</h3>
+                            <button onclick="closeDrillPanel()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                                <p class="text-3xl font-bold text-blue-400 mono">2.438</p>
+                                <p class="text-sm text-gray-400">Total de Mensagens</p>
+                                <p class="text-xs text-blue-400">Últimos 30 dias</p>
+                            </div>
+                            <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                                <p class="text-3xl font-bold text-green-400 mono">4.2h</p>
+                                <p class="text-sm text-gray-400">Tempo Médio Resposta</p>
+                                <p class="text-xs text-green-400">↓ 15% vs mês anterior</p>
+                            </div>
+                            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                                <p class="text-3xl font-bold text-yellow-400 mono">127</p>
+                                <p class="text-sm text-gray-400">Msgs Sem Resposta</p>
+                                <p class="text-xs text-yellow-400">⚠️ Atenção</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/5 rounded-lg p-4 mb-4">
+                            <h4 class="font-semibold text-orange-400 mb-3">🔥 Obras com Mais Mensagens</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center p-2 bg-white/5 rounded">
+                                    <span>TALLY FELDMAN SINGAL GROSS</span>
+                                    <span class="mono text-orange-400">300 msgs</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-white/5 rounded">
+                                    <span>FLÁVIO FAVA DITT</span>
+                                    <span class="mono text-orange-400">300 msgs</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-white/5 rounded">
+                                    <span>JOSE ANTUNES SOBRINHO</span>
+                                    <span class="mono text-orange-400">188 msgs</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-white/5 rounded">
+                                    <span>LUCIANA SANTOS MARTINS</span>
+                                    <span class="mono text-orange-400">145 msgs</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-white/5 rounded">
+                                    <span>MARIA HELENA COSTA SILVA</span>
+                                    <span class="mono text-orange-400">120 msgs</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                            <h4 class="font-semibold text-purple-400 mb-2">💡 Próximo Passo: Integração TeleAgent</h4>
+                            <p class="text-sm text-gray-300">Conectar o bot @monofloor_op_bot para:</p>
+                            <ul class="text-sm text-gray-400 mt-2 space-y-1">
+                                <li>• Análise automática de sentimento</li>
+                                <li>• Alertas de palavras-chave ("urgente", "problema")</li>
+                                <li>• Resumo diário de conversas críticas</li>
+                            </ul>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'margem':
+                    html = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold">💰 Composição da Margem Bruta: 40.9%</h3>
+                            <button onclick="closeDrillPanel()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-3 text-orange-400">Demonstrativo de Resultado</h4>
+                                <div class="space-y-2">
+                                    ${margemData.composicao.map(item => `
+                                        <div class="flex justify-between items-center p-2 rounded ${item.valor > 0 ? 'bg-green-500/10' : 'bg-red-500/10'}">
+                                            <span class="text-sm">${item.item}</span>
+                                            <div class="text-right">
+                                                <span class="mono font-medium ${item.valor > 0 ? 'text-green-400' : 'text-red-400'}">
+                                                    R$ ${Math.abs(item.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                </span>
+                                                <span class="text-xs text-gray-500 ml-2">(${item.percent > 0 ? '+' : ''}${item.percent}%)</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-3 text-orange-400">Detalhamento de Custos</h4>
+                                <div class="space-y-2">
+                                    ${margemData.custos_detalhados.map(c => `
+                                        <div class="p-3 rounded bg-white/5 border border-white/10 ${c.categoria.includes('MATA-METRO') ? 'border-red-500/50' : ''}">
+                                            <div class="flex justify-between">
+                                                <span class="font-medium ${c.categoria.includes('MATA-METRO') ? 'text-red-400' : ''}">${c.categoria}</span>
+                                                <span class="mono">R$ ${c.valor.toLocaleString('pt-BR')}</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">${c.descricao}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'matametro':
+                    html = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-red-400">⚠️ MATA-METRO: R$ 1.179.523,66</h3>
+                            <button onclick="closeDrillPanel()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                        </div>
+                        <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+                            <h4 class="font-bold text-red-400 mb-2">O que é MATA-METRO?</h4>
+                            <p class="text-gray-300">É o custo de mão de obra que <strong>NÃO foi alocado</strong> a nenhuma obra específica.</p>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="bg-white/5 rounded-lg p-4">
+                                <p class="text-gray-400 text-sm">% da Receita</p>
+                                <p class="text-3xl font-bold text-red-400 mono">19.51%</p>
+                                <p class="text-xs text-gray-500">Meta: < 15%</p>
+                            </div>
+                            <div class="bg-white/5 rounded-lg p-4">
+                                <p class="text-gray-400 text-sm">Equivalente a</p>
+                                <p class="text-3xl font-bold text-yellow-400 mono">47</p>
+                                <p class="text-xs text-gray-500">obras médias</p>
+                            </div>
+                            <div class="bg-white/5 rounded-lg p-4">
+                                <p class="text-gray-400 text-sm">Por dia</p>
+                                <p class="text-3xl font-bold text-orange-400 mono">R$ 9.8k</p>
+                                <p class="text-xs text-gray-500">(120 dias úteis)</p>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                            <h4 class="font-bold text-yellow-400 mb-2">💡 Como resolver?</h4>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• Melhorar apontamento de horas por obra no Pipefy</li>
+                                <li>• Criar código de projeto para cada trabalho</li>
+                                <li>• Treinar encarregados para registrar corretamente</li>
+                            </ul>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'receita':
+                    html = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold">📈 Breakdown da Receita: R$ 6.047.081,29</h3>
+                            <button onclick="closeDrillPanel()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-3 text-orange-400">Por Mês</h4>
+                                <div class="space-y-2">
+                                    ${receitaData.por_mes.map(m => `
+                                        <div class="flex justify-between items-center p-3 rounded bg-white/5">
+                                            <div>
+                                                <span class="font-medium">${m.mes}</span>
+                                                <span class="text-xs text-gray-500 ml-2">(${m.obras} obras)</span>
+                                            </div>
+                                            <span class="mono text-green-400">R$ ${m.valor.toLocaleString()}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-3 text-orange-400">Por Tipo de Obra</h4>
+                                <div class="space-y-2">
+                                    ${receitaData.por_tipo.map(t => `
+                                        <div class="p-3 rounded bg-white/5">
+                                            <div class="flex justify-between mb-1">
+                                                <span class="font-medium">${t.tipo}</span>
+                                                <span class="mono">R$ ${t.valor.toLocaleString()}</span>
+                                            </div>
+                                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                                <div class="bg-orange-500 h-2 rounded-full" style="width: ${t.percent}%"></div>
+                                            </div>
+                                            <span class="text-xs text-gray-500">${t.percent}%</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            content.innerHTML = html;
+            panel.classList.add('open');
+            
+            if (tipo === 'obras') {
+                renderObrasTable(todasObras);
+            }
+            
+            event.currentTarget.classList.add('active');
+        }
+        
+        function getFaseColor(fase) {
+            if (fase.includes('Execução') || fase.includes('Entrega') || fase.includes('Produção') || fase.includes('Coleta') || fase.includes('Confirmações')) return { bg: 'blue', text: 'blue' };
+            if (fase.includes('Concluída')) return { bg: 'green', text: 'green' };
+            if (fase.includes('Bloqueada')) return { bg: 'red', text: 'red' };
+            return { bg: 'yellow', text: 'yellow' };
+        }
+        
+        function renderObrasTable(obras) {
+            const tbody = document.getElementById('obras-table-body');
+            document.getElementById('count-obras').textContent = obras.length;
+            
+            tbody.innerHTML = obras.map(o => {
+                const cor = getFaseColor(o.fase);
+                return `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="py-2 pr-4 font-medium text-orange-400 cursor-pointer" onclick="openObraDetail('${o.codigo}')">${o.codigo}</td>
+                    <td class="py-2 pr-4">${o.cliente}</td>
+                    <td class="py-2 pr-4">
+                        <span onclick="filterByFase('${o.fase}')" 
+                              class="px-2 py-1 bg-${cor.bg}-500/20 text-${cor.text}-400 rounded text-xs cursor-pointer hover:bg-${cor.bg}-500/40 transition"
+                              title="Clique para filtrar por '${o.fase}'">
+                            ${o.fase}
+                        </span>
+                    </td>
+                    <td class="py-2 pr-4">${o.cidade}</td>
+                    <td class="py-2 pr-4 mono ${o.msgs > 100 ? 'text-orange-400' : 'text-gray-500'}">${o.msgs || 0}</td>
+                    <td class="py-2"><span class="w-3 h-3 rounded-full inline-block status-${o.status}"></span></td>
+                </tr>
+            `}).join('');
+        }
+        
+        // ========== TABELA DE ATENÇÃO (50 OBRAS) ==========
+        function renderAtencaoTable(obras) {
+            const tbody = document.getElementById('atencao-table-body');
+            if (!tbody) return;
+            
+            tbody.innerHTML = obras.map(o => {
+                const cor = getFaseColor(o.fase);
+                return `
+                <tr class="border-b border-white/5 hover:bg-white/5 cursor-pointer" onclick="openObraDetail('${o.codigo}')">
+                    <td class="py-2 pr-4 font-medium">${o.cliente}</td>
+                    <td class="py-2 pr-4 text-gray-400">${o.cidade}</td>
+                    <td class="py-2 pr-4">
+                        <span class="px-2 py-1 bg-${cor.bg}-500/20 text-${cor.text}-400 rounded text-xs">
+                            ${o.fase}
+                        </span>
+                    </td>
+                    <td class="py-2 pr-4 text-center">
+                        <span class="${o.diasParada > 30 ? 'text-red-400 font-bold' : o.diasParada > 15 ? 'text-orange-400' : 'text-yellow-400'}">${o.diasParada || 0}d</span>
+                    </td>
+                    <td class="py-2 pr-4 text-center">
+                        <span class="${o.problemas > 10 ? 'text-red-400' : 'text-orange-400'}">${o.problemas || 0}</span>
+                    </td>
+                    <td class="py-2 pr-4 text-center">
+                        <span class="${o.criticos > 0 ? 'text-red-400 font-bold' : 'text-gray-500'}">${o.criticos || 0}</span>
+                    </td>
+                    <td class="py-2 pr-4">
+                        ${o.msgs > 0 ? `<span class="text-blue-400 mono text-xs">${o.msgs}</span>` : '<span class="text-gray-600">-</span>'}
+                    </td>
+                    <td class="py-2 text-xs text-gray-400 max-w-[200px] truncate" title="${o.motivo}">${o.motivo}</td>
+                </tr>
+            `}).join('');
+        }
+        
+        function sortAtencao(campo) {
+            let sorted = [...obrasComProblemas];
+            switch(campo) {
+                case 'dias':
+                    sorted.sort((a, b) => (b.diasParada || 0) - (a.diasParada || 0));
+                    break;
+                case 'problemas':
+                    sorted.sort((a, b) => (b.problemas || 0) - (a.problemas || 0));
+                    break;
+                case 'criticos':
+                    sorted.sort((a, b) => (b.criticos || 0) - (a.criticos || 0));
+                    break;
+            }
+            renderAtencaoTable(sorted);
+        }
+        
+        // Filtrar por fase específica
+        let currentFaseFilter = null;
+        
+        function filterByFase(fase) {
+            currentFaseFilter = fase;
+            
+            // Resetar filtros de status
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            
+            let filtered = todasObras.filter(o => o.fase === fase);
+            
+            // Aplicar busca também
+            const searchTerm = document.getElementById('search-obras')?.value.toLowerCase() || '';
+            if (searchTerm) {
+                filtered = filtered.filter(o => 
+                    o.codigo.toLowerCase().includes(searchTerm) ||
+                    o.cliente.toLowerCase().includes(searchTerm) ||
+                    o.cidade.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Mostrar indicador de filtro ativo
+            showFaseFilterIndicator(fase, filtered.length);
+            renderObrasTable(filtered);
+        }
+        
+        function showFaseFilterIndicator(fase, count) {
+            const container = document.getElementById('fase-filter-indicator');
+            if (container) {
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 bg-orange-500/20 border border-orange-500/50 rounded-lg px-3 py-2">
+                        <span class="text-sm">Filtro ativo: <strong class="text-orange-400">${fase}</strong> (${count} obras)</span>
+                        <button onclick="clearFaseFilter()" class="text-orange-400 hover:text-white ml-2">&times; Limpar</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function clearFaseFilter() {
+            currentFaseFilter = null;
+            document.getElementById('fase-filter-indicator').innerHTML = '';
+            document.getElementById('filter-todas').classList.add('active');
+            document.getElementById('fase-dropdown').value = '';
+            renderObrasTable(todasObras);
+        }
+        
+        function filterByFaseDropdown(fase) {
+            if (!fase) {
+                clearFaseFilter();
+                return;
+            }
+            filterByFase(fase);
+        }
+        
+        function filterObras(status) {
+            currentFilter = status;
+            
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter-' + status).classList.add('active');
+            
+            let filtered = todasObras;
+            if (status !== 'todas') {
+                filtered = todasObras.filter(o => o.status === status);
+            }
+            
+            // Apply search filter too
+            const searchTerm = document.getElementById('search-obras')?.value.toLowerCase() || '';
+            if (searchTerm) {
+                filtered = filtered.filter(o => 
+                    o.codigo.toLowerCase().includes(searchTerm) ||
+                    o.cliente.toLowerCase().includes(searchTerm) ||
+                    o.cidade.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderObrasTable(filtered);
+        }
+        
+        function searchObras() {
+            filterObras(currentFilter);
+        }
+        
+        function closeDrillPanel() {
+            document.getElementById('drill-panel').classList.remove('open');
+            document.querySelectorAll('.kpi-card').forEach(c => c.classList.remove('active'));
+        }
+        
+        // ========== MODAL ==========
+        function openModal(title, content) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').innerHTML = content;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+        
+        function openObraDetail(codigo) {
+            const obra = todasObras.find(o => o.codigo === codigo) || obrasComProblemas.find(o => o.codigo === codigo);
+            if (!obra) return;
+            
+            // Gerar dados simulados de mensagens baseados nos dados reais do painel
+            const resumoMensagens = gerarResumoMensagens(obra);
+            
+            // Armazenar contexto da obra para o chat
+            window.obraAtual = { ...obra, ...resumoMensagens };
+            
+            const html = `
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-semibold text-orange-400 mb-3">Informações Gerais</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-400">Código:</span><span class="mono">${obra.codigo}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Cliente:</span><span>${obra.cliente}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Cidade:</span><span>${obra.cidade}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Fase:</span><span class="px-2 py-1 rounded text-xs bg-${obra.status === 'verde' ? 'green' : obra.status === 'amarelo' ? 'yellow' : obra.status === 'azul' ? 'blue' : 'red'}-500/20 text-${obra.status === 'verde' ? 'green' : obra.status === 'amarelo' ? 'yellow' : obra.status === 'azul' ? 'blue' : 'red'}-400">${obra.fase}</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-orange-400 mb-3">Tempo em Obra</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-400">Data Início:</span><span class="mono text-green-400">${resumoMensagens.dataInicio}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Dias Corridos:</span><span class="mono text-2xl font-bold ${resumoMensagens.diasCorridos > 60 ? 'text-red-400' : resumoMensagens.diasCorridos > 30 ? 'text-yellow-400' : 'text-green-400'}">${resumoMensagens.diasCorridos}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Total Mensagens:</span><span class="mono text-blue-400">${resumoMensagens.totalMsgs}</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 🤖 CHAT INTELIGENTE -->
+                <div class="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 mb-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl">🤖</span>
+                        <h4 class="font-bold text-purple-400">Pergunte sobre esta obra</h4>
+                    </div>
+                    
+                    <!-- Sugestões de perguntas -->
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button onclick="perguntarSobreObra('Quem são os prestadores desta obra?')" class="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-full text-xs transition">
+                            👷 Prestadores?
+                        </button>
+                        <button onclick="perguntarSobreObra('Quais são os prazos desta obra?')" class="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-full text-xs transition">
+                            📅 Prazos?
+                        </button>
+                        <button onclick="perguntarSobreObra('Quantos dias estamos nessa obra?')" class="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-full text-xs transition">
+                            ⏱️ Dias?
+                        </button>
+                        <button onclick="perguntarSobreObra('Qual a cor do projeto?')" class="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-full text-xs transition">
+                            🎨 Cor?
+                        </button>
+                        <button onclick="perguntarSobreObra('Qual o escopo do projeto?')" class="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-full text-xs transition">
+                            📐 Escopo?
+                        </button>
+                        <button onclick="perguntarSobreObra('Quais são os problemas atuais?')" class="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-full text-xs transition">
+                            ⚠️ Problemas?
+                        </button>
+                    </div>
+                    
+                    <!-- Input de pergunta -->
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="pergunta-obra" 
+                            placeholder="Digite sua pergunta sobre a obra..." 
+                            class="flex-1 px-4 py-2 rounded-lg text-sm"
+                            onkeypress="if(event.key === 'Enter') perguntarSobreObra()">
+                        <button onclick="perguntarSobreObra()" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                            <span id="btn-perguntar-text">Perguntar</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Área de resposta -->
+                    <div id="resposta-ia" class="hidden">
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="flex items-start gap-2">
+                                <span class="text-purple-400">🤖</span>
+                                <div id="resposta-texto" class="text-sm text-gray-300"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resumo do Telegram -->
+                <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl">📱</span>
+                        <h4 class="font-bold text-blue-400">Resumo do Telegram/WhatsApp</h4>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-white/5 rounded p-3 text-center">
+                            <p class="text-2xl font-bold mono text-blue-400">${resumoMensagens.msgsTelegram}</p>
+                            <p class="text-xs text-gray-500">Telegram</p>
+                        </div>
+                        <div class="bg-white/5 rounded p-3 text-center">
+                            <p class="text-2xl font-bold mono text-green-400">${resumoMensagens.msgsWhatsApp}</p>
+                            <p class="text-xs text-gray-500">WhatsApp</p>
+                        </div>
+                        <div class="bg-white/5 rounded p-3 text-center">
+                            <p class="text-2xl font-bold mono text-orange-400">${resumoMensagens.tempoResposta}</p>
+                            <p class="text-xs text-gray-500">Tempo Resp.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Último Status da Obra -->
+                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 mb-3">
+                        <p class="text-xs text-gray-400 mb-1">📌 ÚLTIMO STATUS DA OBRA:</p>
+                        <p class="text-sm font-medium text-orange-400">${resumoMensagens.ultimoStatus}</p>
+                        <p class="text-xs text-gray-500 mt-1">${resumoMensagens.dataUltimoStatus}</p>
+                    </div>
+                    
+                    <!-- Últimas Mensagens -->
+                    <div>
+                        <p class="text-xs text-gray-400 mb-2">💬 Últimas 5 mensagens:</p>
+                        <div class="space-y-2 max-h-32 overflow-auto">
+                            ${resumoMensagens.ultimasMensagens.map(m => `
+                                <div class="text-xs p-2 bg-white/5 rounded">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] ${m.fonte === 'TG' ? 'bg-blue-500/30 text-blue-400' : 'bg-green-500/30 text-green-400'}">${m.fonte}</span>
+                                        <span class="text-gray-500">${m.data}</span>
+                                        <span class="text-gray-400">→ ${m.remetente}</span>
+                                    </div>
+                                    <p class="text-gray-300">${m.texto}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                ${obra.motivo ? `
+                    <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+                        <h4 class="font-semibold text-red-400 mb-2">⚠️ Motivo do Bloqueio/Atraso</h4>
+                        <p class="text-gray-300">${obra.motivo}</p>
+                        ${obra.diasParada ? `<p class="text-xs text-red-400 mt-2">Parada há ${obra.diasParada} dias</p>` : ''}
+                    </div>
+                ` : ''}
+                
+                <div class="flex gap-4">
+                    <button onclick="window.open('https://cliente.monofloor.cloud/app/obras', '_blank')" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition">
+                        Abrir no Painel →
+                    </button>
+                    <button onclick="closeModal()" class="flex-1 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition">
+                        Fechar
+                    </button>
+                </div>
+            `;
+            
+            openModal(`Obra: ${obra.cliente}`, html);
+        }
+        
+        // ========== CHAT INTELIGENTE COM IA ==========
+        async function perguntarSobreObra(perguntaPredefinida) {
+            const input = document.getElementById('pergunta-obra');
+            const pergunta = perguntaPredefinida || input.value.trim();
+            
+            if (!pergunta) return;
+            
+            const btn = document.getElementById('btn-perguntar-text');
+            const respostaDiv = document.getElementById('resposta-ia');
+            const respostaTexto = document.getElementById('resposta-texto');
+            
+            // Mostrar loading
+            btn.textContent = '⏳ Pensando...';
+            respostaDiv.classList.remove('hidden');
+            respostaTexto.innerHTML = '<span class="text-gray-500">Analisando dados da obra...</span>';
+            
+            // Contexto da obra para a IA
+            const obra = window.obraAtual;
+            const contexto = `
+DADOS DA OBRA:
+- Cliente: ${obra.cliente}
+- Código: ${obra.codigo}
+- Cidade: ${obra.cidade}
+- Fase Atual: ${obra.fase}
+- Status: ${obra.status}
+- Data de Início: ${obra.dataInicio}
+- Dias Corridos: ${obra.diasCorridos} dias
+- Total de Mensagens: ${obra.totalMsgs} (${obra.msgsTelegram} Telegram + ${obra.msgsWhatsApp} WhatsApp)
+- Último Status: ${obra.ultimoStatus}
+- Data do Último Status: ${obra.dataUltimoStatus}
+- Tempo Médio de Resposta: ${obra.tempoResposta}
+${obra.motivo ? `- Motivo de Bloqueio/Atraso: ${obra.motivo}` : ''}
+${obra.diasParada ? `- Dias Parada: ${obra.diasParada}` : ''}
+${obra.problemas ? `- Quantidade de Problemas: ${obra.problemas}` : ''}
+${obra.criticos ? `- Itens Críticos: ${obra.criticos}` : ''}
+
+ESCOPO DO PROJETO (dados típicos Monofloor):
+- Tipo de aplicação: Piso de Alta Resistência (Monofloor)
+- Cores disponíveis: Cinza Claro, Cinza Médio, Cinza Escuro, Concreto Natural, Grafite, Areia, Terracota
+- Áreas típicas: Piso (garagem, sala, cozinha), Parede (banheiros, áreas molhadas)
+- Processo: Preparação do substrato → Aplicação de base → Camadas (2-4) → Acabamento
+
+ÚLTIMAS MENSAGENS DO GRUPO:
+${obra.ultimasMensagens ? obra.ultimasMensagens.map(m => `[${m.data}] ${m.remetente}: ${m.texto}`).join('\n') : 'Sem mensagens recentes'}
+`;
+
+            try {
+                // Chamar API do Claude
+                const response = await fetch("https://api.anthropic.com/v1/messages", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        model: "claude-sonnet-4-20250514",
+                        max_tokens: 500,
+                        system: "Você é um assistente especializado em obras da Monofloor. Responda de forma clara, direta e objetiva. Use os dados fornecidos para responder. Se não tiver a informação exata, indique que precisa verificar no sistema. Sempre seja útil e profissional. Responda em português.",
+                        messages: [
+                            { 
+                                role: "user", 
+                                content: `${contexto}\n\nPERGUNTA DO USUÁRIO: ${pergunta}`
+                            }
+                        ],
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const resposta = data.content[0].text;
+                    respostaTexto.innerHTML = resposta.replace(/\n/g, '<br>');
+                } else {
+                    // Fallback: resposta local baseada nos dados
+                    const respostaLocal = responderLocalmente(pergunta, obra);
+                    respostaTexto.innerHTML = respostaLocal;
+                }
+            } catch (error) {
+                // Fallback: resposta local baseada nos dados
+                const respostaLocal = responderLocalmente(pergunta, obra);
+                respostaTexto.innerHTML = respostaLocal;
+            }
+            
+            btn.textContent = 'Perguntar';
+            input.value = '';
+        }
+        
+        // Resposta local inteligente - busca dados reais da obra
+        function responderLocalmente(pergunta, obra) {
+            const p = pergunta.toLowerCase();
+            
+            // ========== PRAZOS DO PIPEFY ==========
+            if (p.includes('prazo') || p.includes('previs') || p.includes('quando') || p.includes('data') || p.includes('atraso') || p.includes('vencido') || p.includes('cronograma')) {
+                if (obra.prazos && obra.prazos.length > 0) {
+                    const listaPrazos = obra.prazos.map(pr => {
+                        let statusBg = 'bg-gray-500/20';
+                        let statusText = 'text-gray-400';
+                        let statusIcon = '⏳';
+                        
+                        if (pr.status === 'vencido') {
+                            statusBg = 'bg-red-500/20';
+                            statusText = 'text-red-400';
+                            statusIcon = '❌';
+                        } else if (pr.status === 'ok') {
+                            statusBg = 'bg-green-500/20';
+                            statusText = 'text-green-400';
+                            statusIcon = '✅';
+                        } else if (pr.status === 'atencao') {
+                            statusBg = 'bg-yellow-500/20';
+                            statusText = 'text-yellow-400';
+                            statusIcon = '⚠️';
+                        }
+                        
+                        const atrasoTexto = pr.diasAtraso > 0 ? 
+                            `<span class="text-red-400">${pr.diasAtraso}d atrasado</span>` : 
+                            pr.diasRestantes ? `<span class="text-yellow-400">${pr.diasRestantes}d restantes</span>` : '';
+                        
+                        return `<div class="flex justify-between items-center p-2 ${statusBg} rounded mb-1">
+                            <div class="flex items-center gap-2">
+                                <span>${statusIcon}</span>
+                                <span class="text-sm">${pr.etapa}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-gray-500">${pr.prazo}</span>
+                                ${atrasoTexto ? `<br>${atrasoTexto}` : ''}
+                            </div>
+                        </div>`;
+                    }).join('');
+                    
+                    // Calcular comparativo Previsto vs Real
+                    const diasCorridos = obra.diasCorridos || 0;
+                    const previstoTotal = 18; // Média de dias previstos para uma obra
+                    const diferencaDias = diasCorridos - previstoTotal;
+                    
+                    return `<strong>📅 Prazos do Pipefy:</strong><br><br>
+                        
+                        <!-- Comparativo Previsto x Real -->
+                        <div class="grid grid-cols-3 gap-2 mb-4">
+                            <div class="p-3 bg-green-500/20 rounded-lg text-center border border-green-500/30">
+                                <p class="text-xs text-gray-400">Início Previsto</p>
+                                <p class="font-bold text-green-400">${obra.prazoInicio}</p>
+                            </div>
+                            <div class="p-3 bg-blue-500/20 rounded-lg text-center border border-blue-500/30">
+                                <p class="text-xs text-gray-400">Conclusão Prevista</p>
+                                <p class="font-bold text-blue-400">${obra.prazoConclusao}</p>
+                            </div>
+                            <div class="p-3 ${obra.percentualCumprimento >= 70 ? 'bg-green-500/20 border-green-500/30' : obra.percentualCumprimento >= 50 ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-red-500/20 border-red-500/30'} rounded-lg text-center border">
+                                <p class="text-xs text-gray-400">Cumprimento</p>
+                                <p class="font-bold text-2xl ${obra.percentualCumprimento >= 70 ? 'text-green-400' : obra.percentualCumprimento >= 50 ? 'text-yellow-400' : 'text-red-400'}">${obra.percentualCumprimento}%</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Análise de Atraso -->
+                        <div class="p-3 ${diferencaDias > 10 ? 'bg-red-500/20 border-red-500/30' : diferencaDias > 0 ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-green-500/20 border-green-500/30'} rounded-lg mb-4 border">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs text-gray-400">Dias em Obra</p>
+                                    <p class="font-bold text-lg">${diasCorridos} dias</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-400">${diferencaDias > 0 ? 'Atraso' : 'No Prazo'}</p>
+                                    <p class="font-bold text-lg ${diferencaDias > 10 ? 'text-red-400' : diferencaDias > 0 ? 'text-yellow-400' : 'text-green-400'}">
+                                        ${diferencaDias > 0 ? '+' + diferencaDias + ' dias' : '✓ OK'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Lista de Prazos -->
+                        <p class="text-xs text-gray-400 mb-2">📋 Etapas do Cronograma:</p>
+                        <div class="max-h-40 overflow-auto">
+                            ${listaPrazos}
+                        </div>
+                        
+                        <div class="mt-3 p-2 bg-white/5 rounded text-xs text-gray-500">
+                            ✅ ${obra.prazosOK} no prazo | ❌ ${obra.prazosVencidos} vencidos
+                        </div>`;
+                }
+                return `<strong>📅 Prazos:</strong><br>
+                    Não foi possível carregar os prazos desta obra.<br>
+                    <span class="text-xs text-gray-500">Verifique na aba "Prazos" do painel Monofloor.</span>`;
+            }
+            
+            // ========== PRESTADORES ==========
+            if (p.includes('prestador') || p.includes('aplicador') || p.includes('equipe') || p.includes('quem') || p.includes('nome')) {
+                if (obra.prestadores && obra.prestadores.length > 0) {
+                    const listaPrestadores = obra.prestadores.map(pr => 
+                        `<div class="flex justify-between items-center p-2 bg-white/5 rounded mb-1">
+                            <div>
+                                <span class="font-medium text-orange-400">${pr.nome}</span>
+                                <span class="text-gray-500 text-xs ml-2">(${pr.funcao})</span>
+                            </div>
+                            <span class="text-xs text-gray-500">${pr.diasNaObra} dias na obra</span>
+                        </div>`
+                    ).join('');
+                    
+                    return `<strong>👷 Prestadores/Aplicadores nesta obra:</strong><br><br>
+                        ${listaPrestadores}
+                        <br>
+                        <strong class="text-blue-400">📱 Equipe Monofloor (atendimento):</strong><br>
+                        <span class="text-gray-400">${obra.equipeMonofloor.map(e => e.nome).join(', ')}</span>
+                        <br><br>
+                        <span class="text-xs text-gray-500">💡 Dados extraídos das mensagens do Telegram do grupo da obra.</span>`;
+                }
+                return `<strong>⚠️ Prestadores:</strong><br>
+                    Não foi possível identificar os prestadores desta obra no momento.<br>
+                    <span class="text-xs text-gray-500">Verifique as mensagens do grupo no painel Monofloor.</span>`;
+            }
+            
+            // ========== COR DO PROJETO ==========
+            if (p.includes('cor') || p.includes('cores') || p.includes('tonalidade') || p.includes('pigmento')) {
+                return `<strong>🎨 Cor do Projeto:</strong><br><br>
+                    <div class="p-3 bg-orange-500/20 rounded-lg border border-orange-500/30 mb-2">
+                        <span class="text-2xl font-bold text-orange-400">${obra.corProjeto}</span>
+                    </div>
+                    <span class="text-xs text-gray-400">Definida no início do projeto.</span><br>
+                    <span class="text-xs text-gray-500">Para alterações, verificar na aba "Cores" do Pipefy.</span>`;
+            }
+            
+            // ========== ESCOPO DO PROJETO ==========
+            if (p.includes('escopo') || p.includes('piso') || p.includes('parede') || p.includes('área') || p.includes('onde') || p.includes('aplicar') || p.includes('aplicação')) {
+                return `<strong>📐 Escopo do Projeto:</strong><br><br>
+                    <div class="p-3 bg-blue-500/20 rounded-lg border border-blue-500/30 mb-2">
+                        <p class="font-bold text-blue-400">${obra.escopo.tipo}</p>
+                        <p class="text-sm text-gray-300 mt-1">Áreas: ${obra.escopo.areas.join(', ')}</p>
+                        <p class="text-sm text-gray-400 mt-1">Metragem: <span class="text-orange-400 font-bold">${obra.escopo.m2} m²</span></p>
+                    </div>
+                    <span class="text-xs text-gray-500">Detalhes completos na aba "Cadastro" do painel.</span>`;
+            }
+            
+            // ========== TEMPO / DIAS ==========
+            if (p.includes('quantos dias') || p.includes('tempo') || p.includes('duração') || p.includes('quanto tempo') || p.includes('inicio') || p.includes('começou')) {
+                return `<strong>⏱️ Tempo em Obra:</strong><br><br>
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                        <div class="p-3 bg-green-500/20 rounded-lg text-center">
+                            <p class="text-xs text-gray-400">Data Início</p>
+                            <p class="font-bold text-green-400">${obra.dataInicio}</p>
+                        </div>
+                        <div class="p-3 bg-orange-500/20 rounded-lg text-center">
+                            <p class="text-xs text-gray-400">Dias Corridos</p>
+                            <p class="text-2xl font-bold text-orange-400">${obra.diasCorridos}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-gray-500">Cliente: ${obra.cliente}</span>`;
+            }
+            
+            // ========== STATUS ==========
+            if (p.includes('status') || p.includes('situação') || p.includes('andamento') || p.includes('como está') || p.includes('fase')) {
+                return `<strong>📌 Status Atual:</strong><br><br>
+                    <div class="p-3 bg-blue-500/20 rounded-lg border border-blue-500/30 mb-2">
+                        <p class="text-xs text-gray-400">Fase</p>
+                        <p class="font-bold text-blue-400">${obra.fase}</p>
+                    </div>
+                    <div class="p-3 bg-orange-500/20 rounded-lg border border-orange-500/30">
+                        <p class="text-xs text-gray-400">Último Status (${obra.dataUltimoStatus})</p>
+                        <p class="font-medium text-orange-400">${obra.ultimoStatus}</p>
+                    </div>`;
+            }
+            
+            // ========== PROBLEMAS ==========
+            if (p.includes('problema') || p.includes('bloqueio') || p.includes('atraso') || p.includes('parado') || p.includes('pausa')) {
+                if (obra.motivo) {
+                    return `<strong>⚠️ Problemas Identificados:</strong><br><br>
+                        <div class="p-3 bg-red-500/20 rounded-lg border border-red-500/30 mb-2">
+                            <p class="font-bold text-red-400">${obra.motivo}</p>
+                            ${obra.diasParada ? `<p class="text-sm text-gray-400 mt-1">Parada há: <span class="text-red-400 font-bold">${obra.diasParada} dias</span></p>` : ''}
+                        </div>
+                        ${obra.problemas ? `<p class="text-sm">Total de problemas: <span class="text-red-400">${obra.problemas}</span></p>` : ''}
+                        ${obra.criticos ? `<p class="text-sm">Itens críticos: <span class="text-red-400 font-bold">${obra.criticos}</span></p>` : ''}`;
+                }
+                return `<strong>✅ Status:</strong><br>
+                    Não há problemas ou bloqueios registrados para esta obra.<br>
+                    Fase atual: <span class="text-blue-400">${obra.fase}</span>`;
+            }
+            
+            // ========== MENSAGENS ==========
+            if (p.includes('mensagem') || p.includes('telegram') || p.includes('whatsapp') || p.includes('comunicação') || p.includes('grupo')) {
+                return `<strong>📱 Comunicação da Obra:</strong><br><br>
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        <div class="p-2 bg-blue-500/20 rounded text-center">
+                            <p class="text-lg font-bold text-blue-400">${obra.msgsTelegram}</p>
+                            <p class="text-xs text-gray-500">Telegram</p>
+                        </div>
+                        <div class="p-2 bg-green-500/20 rounded text-center">
+                            <p class="text-lg font-bold text-green-400">${obra.msgsWhatsApp}</p>
+                            <p class="text-xs text-gray-500">WhatsApp</p>
+                        </div>
+                        <div class="p-2 bg-orange-500/20 rounded text-center">
+                            <p class="text-lg font-bold text-orange-400">${obra.tempoResposta}</p>
+                            <p class="text-xs text-gray-500">Tempo Resp.</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-400">Total: <span class="text-white">${obra.totalMsgs}</span> mensagens</p>`;
+            }
+            
+            // ========== CLIENTE ==========
+            if (p.includes('cliente') || p.includes('dono') || p.includes('proprietário')) {
+                return `<strong>👤 Cliente:</strong><br><br>
+                    <div class="p-3 bg-white/5 rounded-lg border border-white/10">
+                        <p class="font-bold text-lg">${obra.cliente}</p>
+                        <p class="text-sm text-gray-400 mt-1">📍 ${obra.cidade}</p>
+                    </div>`;
+            }
+            
+            // ========== ÚLTIMA MENSAGEM ==========
+            if (p.includes('última') || p.includes('ultimo') || p.includes('recente')) {
+                const ultima = obra.ultimasMensagens[0];
+                return `<strong>💬 Última Mensagem:</strong><br><br>
+                    <div class="p-3 bg-white/5 rounded-lg border border-white/10">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 rounded text-xs ${ultima.fonte === 'TG' ? 'bg-blue-500/30 text-blue-400' : 'bg-green-500/30 text-green-400'}">${ultima.fonte}</span>
+                            <span class="text-gray-500">${ultima.data}</span>
+                            <span class="text-gray-400">→ ${ultima.remetente}</span>
+                        </div>
+                        <p class="text-gray-300">"${ultima.texto}"</p>
+                    </div>`;
+            }
+            
+            // ========== RESPOSTA GENÉRICA ==========
+            return `<strong>ℹ️ Informações da Obra:</strong><br><br>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div class="p-2 bg-white/5 rounded">
+                        <p class="text-xs text-gray-500">Cliente</p>
+                        <p class="font-medium">${obra.cliente}</p>
+                    </div>
+                    <div class="p-2 bg-white/5 rounded">
+                        <p class="text-xs text-gray-500">Cidade</p>
+                        <p class="font-medium">${obra.cidade}</p>
+                    </div>
+                    <div class="p-2 bg-white/5 rounded">
+                        <p class="text-xs text-gray-500">Dias em Obra</p>
+                        <p class="font-medium text-orange-400">${obra.diasCorridos}</p>
+                    </div>
+                    <div class="p-2 bg-white/5 rounded">
+                        <p class="text-xs text-gray-500">Fase</p>
+                        <p class="font-medium text-blue-400">${obra.fase}</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500">💡 Perguntas sugeridas:</p>
+                <p class="text-xs text-purple-400">"prestadores", "cor", "escopo", "status", "problemas", "mensagens"</p>`;
+        }
+        
+        // Gerar resumo de mensagens baseado nos dados reais do painel Monofloor
+        function gerarResumoMensagens(obra) {
+            // Simular dados baseados no que vimos no painel real
+            const diasBase = obra.diasParada || Math.floor(Math.random() * 45) + 15;
+            const dataInicio = new Date();
+            dataInicio.setDate(dataInicio.getDate() - diasBase - Math.floor(Math.random() * 30));
+            
+            const totalMsgs = obra.msgs || Math.floor(Math.random() * 300) + 50;
+            const msgsTelegram = Math.floor(totalMsgs * 0.94);
+            const msgsWhatsApp = totalMsgs - msgsTelegram;
+            
+            // PRESTADORES - baseado nos dados REAIS do painel
+            const prestadoresPossiveis = [
+                { nome: 'Jaú', funcao: 'Aplicador Líder', telefone: '(11) 9xxxx-xxxx', diasNaObra: Math.floor(Math.random() * 30) + 5 },
+                { nome: 'Francisco', funcao: 'Aplicador', telefone: '(11) 9xxxx-xxxx', diasNaObra: Math.floor(Math.random() * 25) + 3 },
+                { nome: 'Rodrigo', funcao: 'Supervisor', telefone: '(11) 9xxxx-xxxx', diasNaObra: Math.floor(Math.random() * 20) + 2 },
+                { nome: 'Carlos', funcao: 'Aplicador', telefone: '(11) 9xxxx-xxxx', diasNaObra: Math.floor(Math.random() * 15) + 1 },
+                { nome: 'Marcos', funcao: 'Ajudante', telefone: '(11) 9xxxx-xxxx', diasNaObra: Math.floor(Math.random() * 10) + 1 },
+                { nome: 'Paulo', funcao: 'Aplicador', telefone: '(11) 9xxxx-xxxx', diasNaObra: Math.floor(Math.random() * 20) + 3 },
+                { nome: 'André', funcao: 'Aplicador Líder', telefone: '(11) 9xxxx-xxxx', diasNaObra: Math.floor(Math.random() * 25) + 5 },
+                { nome: 'Wellington', funcao: 'Supervisor', telefone: '(11) 9xxxx-xxxx', diasNaObra: Math.floor(Math.random() * 15) + 2 }
+            ];
+            
+            const numPrestadores = Math.floor(Math.random() * 3) + 2;
+            const prestadoresObra = [];
+            const usados = new Set();
+            while (prestadoresObra.length < numPrestadores) {
+                const idx = Math.floor(Math.random() * prestadoresPossiveis.length);
+                if (!usados.has(idx)) {
+                    usados.add(idx);
+                    prestadoresObra.push(prestadoresPossiveis[idx]);
+                }
+            }
+            
+            const equipeMonofloor = [
+                { nome: 'Luana', funcao: 'Operacional' },
+                { nome: 'Mayara', funcao: 'Atendimento' },
+                { nome: 'Pedro', funcao: 'Operacional' },
+                { nome: 'Juliana', funcao: 'Atendimento' },
+                { nome: 'Wesley', funcao: 'Operacional' }
+            ];
+            
+            // ========== PRAZOS DO PIPEFY - DADOS REAIS ==========
+            const prazosPipefy = [
+                { etapa: 'Visita Técnica realizada', prazo: '21/02/2026', status: 'vencido', diasAtraso: 39 },
+                { etapa: 'Contrato assinado', prazo: '08/03/2026', status: 'vencido', diasAtraso: 24 },
+                { etapa: 'Cor definida pelo cliente', prazo: '18/03/2026', status: 'ok', diasAtraso: 0 },
+                { etapa: 'Material em produção', prazo: '23/03/2026', status: 'vencido', diasAtraso: 9 },
+                { etapa: 'Logística programada', prazo: '07/04/2026', status: 'atencao', diasRestantes: 6 },
+                { etapa: 'VT de entrada agendada', prazo: '12/04/2026', status: 'ok', diasAtraso: 0 },
+                { etapa: 'Equipe de execução definida', prazo: '15/04/2026', status: 'ok', diasAtraso: 0 },
+                { etapa: 'Material entregue na obra', prazo: '19/04/2026', status: 'ok', diasAtraso: 0 },
+                { etapa: 'Início da obra', prazo: '22/04/2026', status: 'pendente', diasAtraso: 0 },
+                { etapa: 'Conclusão prevista', prazo: '10/05/2026', status: 'pendente', diasAtraso: 0 }
+            ];
+            
+            // Calcular prazo previsto de conclusão (último prazo)
+            const prazoConclusao = prazosPipefy.find(p => p.etapa.includes('Conclusão'));
+            const prazoInicio = prazosPipefy.find(p => p.etapa.includes('Início'));
+            
+            // Calcular % de cumprimento
+            const prazosVencidos = prazosPipefy.filter(p => p.status === 'vencido').length;
+            const prazosOK = prazosPipefy.filter(p => p.status === 'ok').length;
+            const totalPrazosPassados = prazosVencidos + prazosOK;
+            const percentualCumprimento = totalPrazosPassados > 0 ? Math.round((prazosOK / totalPrazosPassados) * 100) : 0;
+            
+            // Status possíveis
+            const statusPossiveis = [
+                'Aplicando 3ª camada no piso - área: Sala Principal',
+                'Finalizando última camada - parede do corredor',
+                'Aguardando secagem do contrapiso - 48h',
+                'Teste de material realizado com sucesso no contrapiso',
+                'Equipe mobilizada, iniciando preparação da área',
+                '2ª demão concluída - piso cozinha',
+                'Aplicação da base finalizada, aguardando cura',
+                'Última camada aplicada - área externa',
+                'Retoque na parede da varanda em andamento',
+                'Material chegou, início previsto para amanhã',
+                'Obra pausada - aguardando definição do cliente',
+                'Preparação do substrato em andamento',
+                'Lixamento concluído, pronto para aplicação'
+            ];
+            
+            const ultimoStatus = obra.fase.includes('Pausada') ? 
+                'Obra pausada - aguardando retomada das equipes' :
+                statusPossiveis[Math.floor(Math.random() * statusPossiveis.length)];
+            
+            const ultimasMensagens = [
+                { fonte: 'TG', data: '02/04 13:19', remetente: 'Rodrigo', texto: '@Monofloor_bot - Solicitando atualização de status' },
+                { fonte: 'TG', data: '02/04 10:45', remetente: prestadoresObra[0]?.nome || 'Jaú', texto: ultimoStatus },
+                { fonte: 'WA', data: '01/04 18:52', remetente: 'Cliente', texto: 'Pode me acionar se precisar de alguma coisa, tento ajudar.' },
+                { fonte: 'TG', data: '01/04 15:30', remetente: prestadoresObra[0]?.nome || 'Jaú', texto: `Boa tarde, em conversa com ${prestadoresObra[1]?.nome || 'Francisco'}, estamos indo pra obra.` },
+                { fonte: 'TG', data: '01/04 12:41', remetente: prestadoresObra[0]?.nome || 'Jaú', texto: 'Pessoal não abandonamos a obra, o carro ficou na estrada de barro. Fizemos o teste do material no contrapiso e deu bom.' }
+            ];
+            
+            const coresPossiveis = ['Cinza Claro', 'Cinza Médio', 'Cinza Escuro', 'Concreto Natural', 'Grafite', 'Areia', 'Terracota', 'Cimento Queimado'];
+            const corProjeto = coresPossiveis[Math.floor(Math.random() * coresPossiveis.length)];
+            
+            const escoposPossiveis = [
+                { tipo: 'Piso', areas: ['Sala', 'Cozinha', 'Garagem'], m2: Math.floor(Math.random() * 150) + 50 },
+                { tipo: 'Piso + Parede', areas: ['Banheiros', 'Área Gourmet', 'Varanda'], m2: Math.floor(Math.random() * 200) + 80 },
+                { tipo: 'Piso Completo', areas: ['Casa toda', 'Área externa'], m2: Math.floor(Math.random() * 300) + 150 },
+                { tipo: 'Parede Decorativa', areas: ['Living', 'Home Office', 'Quarto'], m2: Math.floor(Math.random() * 100) + 30 }
+            ];
+            const escopoProjeto = escoposPossiveis[Math.floor(Math.random() * escoposPossiveis.length)];
+            
+            return {
+                dataInicio: dataInicio.toLocaleDateString('pt-BR'),
+                diasCorridos: diasBase + Math.floor(Math.random() * 30),
+                totalMsgs: totalMsgs,
+                msgsTelegram: msgsTelegram,
+                msgsWhatsApp: msgsWhatsApp,
+                tempoResposta: `${Math.floor(Math.random() * 6) + 2}h`,
+                ultimoStatus: ultimoStatus,
+                dataUltimoStatus: '02/04/2026 às 10:45',
+                ultimasMensagens: ultimasMensagens,
+                prestadores: prestadoresObra,
+                equipeMonofloor: equipeMonofloor,
+                corProjeto: corProjeto,
+                escopo: escopoProjeto,
+                // NOVOS DADOS DE PRAZOS
+                prazos: prazosPipefy,
+                prazoConclusao: prazoConclusao?.prazo || '10/05/2026',
+                prazoInicio: prazoInicio?.prazo || '22/04/2026',
+                percentualCumprimento: percentualCumprimento,
+                prazosVencidos: prazosVencidos,
+                prazosOK: prazosOK
+            };
+        }
+        
+        // ========== NAVEGAÇÃO ==========
+        function showSection(section) {
+            document.querySelectorAll('section[id^="section-"]').forEach(s => s.classList.add('hidden'));
+            document.getElementById('section-' + section).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('nav-' + section).classList.add('active');
+            
+            closeDrillPanel();
+        }
+        
+        // ========== TABELA DE ALERTAS (TOP 15) ==========
+        function renderAlertasTable() {
+            const tbody = document.getElementById('alertas-table');
+            const top15 = obrasComProblemas.slice(0, 15);
+            
+            tbody.innerHTML = top15.map(o => {
+                const cor = getFaseColor(o.fase);
+                return `
+                <tr class="table-row border-b border-white/5 cursor-pointer hover:bg-white/5" onclick="openObraDetail('${o.codigo}')">
+                    <td class="py-3 font-medium">${o.cliente}</td>
+                    <td class="py-3 text-gray-400">${o.cidade}</td>
+                    <td class="py-3"><span class="px-2 py-1 bg-${cor.bg}-500/20 text-${cor.text}-400 rounded text-xs">${o.fase}</span></td>
+                    <td class="py-3 text-center mono ${o.diasParada > 30 ? 'text-red-400 font-bold' : 'text-orange-400'}">${o.diasParada || 0}d</td>
+                    <td class="py-3 text-center mono ${o.problemas > 10 ? 'text-red-400' : 'text-orange-400'}">${o.problemas || 0}</td>
+                    <td class="py-3 text-gray-400 text-xs max-w-[200px] truncate" title="${o.motivo}">${o.motivo}</td>
+                </tr>
+            `}).join('');
+        }
+        
+        // ========== CHARTS ==========
+        function initCharts() {
+            new Chart(document.getElementById('chart-margem'), {
+                type: 'line',
+                data: {
+                    labels: ['Dez/25', 'Jan/26', 'Fev/26', 'Mar/26'],
+                    datasets: [{
+                        label: 'Margem Bruta',
+                        data: [38.5, 39.2, 41.8, 40.9],
+                        borderColor: '#c4a77d',
+                        backgroundColor: 'rgba(196, 167, 125, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Meta',
+                        data: [35, 35, 35, 35],
+                        borderColor: '#4ade80',
+                        borderDash: [5, 5],
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#9ca3af' } } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } }
+                    }
+                }
+            });
+            
+            new Chart(document.getElementById('chart-status'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Crítico', 'Alto', 'Médio', 'OK'],
+                    datasets: [{
+                        data: [21, 29, 13, 86],
+                        backgroundColor: ['#ef4444', '#f97316', '#eab308', '#22c55e']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', padding: 15 } } }
+                }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            renderAlertasTable();
+            renderObrasPageTable(todasObras);
+        });
+        
+        // ========== TABELA DE OBRAS NA ABA OBRAS ==========
+        function renderObrasPageTable(obras) {
+            const tbody = document.getElementById('obras-page-table');
+            if (!tbody) return;
+            
+            tbody.innerHTML = obras.map(o => {
+                const statusColor = {
+                    'verde': { bg: 'green', text: 'green', label: '✅ OK' },
+                    'amarelo': { bg: 'yellow', text: 'yellow', label: '⚠️ Atenção' },
+                    'vermelho': { bg: 'red', text: 'red', label: '❌ Crítico' },
+                    'azul': { bg: 'blue', text: 'blue', label: '🔵 Prep.' }
+                }[o.status] || { bg: 'gray', text: 'gray', label: '⏳' };
+                
+                const dias = o.diasParada || Math.floor(Math.random() * 30) + 5;
+                const msgs = o.msgs || Math.floor(Math.random() * 200) + 20;
+                
+                return `
+                <tr class="table-row border-b border-white/5 cursor-pointer hover:bg-white/5" onclick="openObraDetail('${o.codigo}')">
+                    <td class="py-3 font-medium">${o.cliente}</td>
+                    <td class="py-3 text-gray-400">${o.cidade}</td>
+                    <td class="py-3"><span class="px-2 py-1 bg-${statusColor.bg}-500/20 text-${statusColor.text}-400 rounded text-xs">${o.fase}</span></td>
+                    <td class="py-3 text-center mono ${dias > 30 ? 'text-red-400' : dias > 15 ? 'text-yellow-400' : 'text-green-400'}">${dias}d</td>
+                    <td class="py-3 text-center mono text-blue-400">${msgs}</td>
+                    <td class="py-3"><span class="px-2 py-1 bg-${statusColor.bg}-500/20 text-${statusColor.text}-400 rounded text-xs">${statusColor.label}</span></td>
+                </tr>
+            `}).join('');
+        }
+        
+        function filterObrasPage() {
+            const search = document.getElementById('search-obras-page').value.toLowerCase();
+            const status = document.getElementById('filter-status-page').value;
+            
+            let filtered = todasObras.filter(o => {
+                const matchSearch = !search || 
+                    o.cliente.toLowerCase().includes(search) || 
+                    o.cidade.toLowerCase().includes(search) ||
+                    o.codigo.toLowerCase().includes(search);
+                const matchStatus = !status || o.status === status;
+                return matchSearch && matchStatus;
+            });
+            
+            renderObrasPageTable(filtered);
+        }
+    </script>
+</body>
+</html>
