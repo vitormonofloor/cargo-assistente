@@ -1,0 +1,2 @@
+id,data,decisao,categoria,contexto,resultado_esperado,riscos,revisao_em,status,resultado_real,data_revisao
+001,2026-04-02,Implementar Cérebro Monofloor,processo,Sistema atual não tem visibilidade integrada,Alertas automáticos e decisões baseadas em dados,Curva de aprendizado da equipe,2026-05-02,pendente,,
