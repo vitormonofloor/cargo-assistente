@@ -11,8 +11,9 @@ name: Cérebro Monofloor
 
 on:
   schedule:
-    - cron: '30 10 * * 1-5'   # Agente Operacional 07:30 BRT
-    - cron: '0 11 * * 1-5'    # Cérebro Central 08:00 BRT
+    - cron: '30 10 * * 1-5'   # Agente Operacional 07:30 BRT (diário)
+    - cron: '0 11 * * 1-5'    # Cérebro Central 08:00 BRT (diário)
+    - cron: '0 8 * * 1'       # Agente Histórico 05:00 BRT (segunda)
   workflow_dispatch:
     inputs:
       agente:
@@ -23,11 +24,12 @@ on:
         options:
           - operacional
           - cerebro
+          - historico
           - ambos
 
 permissions:
-  contents: read
-  models: read   # necessário para GitHub Models (free tier)
+  contents: write  # write para commit automático do snapshot histórico
+  models: read     # necessário para GitHub Models (free tier)
 
 jobs:
   # ─────────────────────────────────────────────────────────
@@ -118,3 +120,50 @@ jobs:
           name: analise-cerebro
           path: cerebro_monofloor/outputs/
           retention-days: 30
+
+  # ─────────────────────────────────────────────────────────
+  # JOB 3 — Agente Histórico (coleta completa semanal)
+  # ─────────────────────────────────────────────────────────
+  agente-historico:
+    if: github.event.schedule == '0 8 * * 1' || github.event.inputs.agente == 'historico'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install requests
+
+      - name: Executar Agente Histórico
+        env:
+          PIPEFY_TOKEN: ${{ secrets.PIPEFY_TOKEN }}
+        run: |
+          cd cerebro_monofloor
+          python agentes/agente_historico.py
+
+      - name: Commit snapshot histórico no repo
+        run: |
+          cd cerebro_monofloor
+          if [ -f outputs/pipefy_cards_full.json ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            # salva em pasta versionada
+            mkdir -p snapshots
+            STAMP=$(date +%Y-%m-%d)
+            cp outputs/pipefy_cards_full.json snapshots/pipefy_cards_$STAMP.json
+            git add snapshots/pipefy_cards_$STAMP.json
+            git diff --staged --quiet || git commit -m "📸 Snapshot histórico $STAMP"
+            git push
+          fi
+
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-historico
+          path: cerebro_monofloor/outputs/pipefy_cards_full.json
+          retention-days: 90
