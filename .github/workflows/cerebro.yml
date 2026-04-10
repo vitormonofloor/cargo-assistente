@@ -13,7 +13,8 @@ on:
   schedule:
     - cron: '30 10 * * 1-5'   # Agente Operacional 07:30 BRT (diário)
     - cron: '0 11 * * 1-5'    # Cérebro Central 08:00 BRT (diário)
-    - cron: '0 8 * * 1'       # Agente Histórico 05:00 BRT (segunda)
+    - cron: '0 8 * * 1,5'     # Agente Histórico 05:00 BRT (seg e sex)
+    - cron: '40 15 10 4 *'    # ONE-SHOT: 10/abr/2026 15:40 UTC (12:40 BRT) — histórico hoje
   workflow_dispatch:
     inputs:
       agente:
@@ -125,7 +126,10 @@ jobs:
   # JOB 3 — Agente Histórico (coleta completa semanal)
   # ─────────────────────────────────────────────────────────
   agente-historico:
-    if: github.event.schedule == '0 8 * * 1' || github.event.inputs.agente == 'historico'
+    if: |
+      github.event.schedule == '0 8 * * 1,5' ||
+      github.event.schedule == '40 15 10 4 *' ||
+      github.event.inputs.agente == 'historico'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
