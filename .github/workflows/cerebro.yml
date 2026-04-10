@@ -1,11 +1,18 @@
 name: Cérebro Monofloor
 
+# ══════════════════════════════════════════════════════════════
+# Arquitetura:
+#   07:30 BRT (10:30 UTC) — Agente Operacional coleta Pipefy
+#   08:00 BRT (11:00 UTC) — Cérebro Central analisa (regras + AI opcional)
+#
+# AI usa GitHub Models (free tier) via GITHUB_TOKEN automaticamente.
+# Anthropic API é fallback opcional — NÃO é mais obrigatório.
+# ══════════════════════════════════════════════════════════════
+
 on:
   schedule:
-    # Agente Operacional - 07:30 BRT (10:30 UTC)
-    - cron: '30 10 * * 1-5'
-    # Cérebro Central - 08:00 BRT (11:00 UTC)
-    - cron: '0 11 * * 1-5'
+    - cron: '30 10 * * 1-5'   # Agente Operacional 07:30 BRT
+    - cron: '0 11 * * 1-5'    # Cérebro Central 08:00 BRT
   workflow_dispatch:
     inputs:
       agente:
@@ -18,72 +25,96 @@ on:
           - cerebro
           - ambos
 
+permissions:
+  contents: read
+  models: read   # necessário para GitHub Models (free tier)
+
 jobs:
+  # ─────────────────────────────────────────────────────────
+  # JOB 1 — Agente Operacional (coleta Pipefy)
+  # ─────────────────────────────────────────────────────────
   agente-operacional:
     if: github.event.schedule == '30 10 * * 1-5' || github.event.inputs.agente == 'operacional' || github.event.inputs.agente == 'ambos'
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Instalar dependências
         run: pip install requests
-      
+
       - name: Executar Agente Operacional
         env:
           PIPEFY_TOKEN: ${{ secrets.PIPEFY_TOKEN }}
         run: |
           cd cerebro_monofloor
           python agentes/agente_operacional.py
-      
-      - name: Upload dados
+
+      - name: Upload dados coletados
         uses: actions/upload-artifact@v4
         with:
           name: dados-operacionais
           path: cerebro_monofloor/outputs/
+          retention-days: 30
 
+  # ─────────────────────────────────────────────────────────
+  # JOB 2 — Cérebro Central (análise)
+  # ─────────────────────────────────────────────────────────
   cerebro-central:
-    if: github.event.schedule == '0 11 * * 1-5' || github.event.inputs.agente == 'cerebro' || github.event.inputs.agente == 'ambos'
+    # roda mesmo se o agente-operacional falhou/foi pulado (schedules distintos)
+    if: |
+      always() && (
+        github.event.schedule == '0 11 * * 1-5' ||
+        github.event.inputs.agente == 'cerebro' ||
+        github.event.inputs.agente == 'ambos'
+      )
     runs-on: ubuntu-latest
     needs: [agente-operacional]
-    if: always()
-    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Download dados operacionais
         uses: actions/download-artifact@v4
         with:
           name: dados-operacionais
           path: cerebro_monofloor/outputs/
         continue-on-error: true
-      
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Instalar dependências
-        run: pip install anthropic requests
-      
+        # anthropic é opcional — só instalado se ANTHROPIC_API_KEY existir
+        run: |
+          pip install requests
+          if [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            pip install anthropic
+          fi
+
       - name: Executar Cérebro Central
         env:
+          # GitHub Models (free — sempre disponível)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Anthropic (opcional — só usado se a secret existir)
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Telegram (opcional)
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           cd cerebro_monofloor
           python agentes/cerebro_central.py
-      
+
       - name: Upload análise
         uses: actions/upload-artifact@v4
         with:
           name: analise-cerebro
           path: cerebro_monofloor/outputs/
+          retention-days: 30

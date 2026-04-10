@@ -1,27 +1,38 @@
 {
   "nome": "Cérebro Monofloor",
-  "versao": "1.0.0",
+  "versao": "2.0.0",
   "criado_em": "2026-04-01",
-  
+  "atualizado_em": "2026-04-10",
+  "arquitetura": "regras_deterministicas + ai_opcional",
+
   "agentes": {
     "operacional": {
       "nome": "Agente Operacional",
-      "fontes": ["pipefy", "monofloor_painel"],
+      "fontes": ["pipefy"],
       "horario": "07:30",
-      "ativo": true
+      "ativo": true,
+      "pipes": {
+        "oe": "306410007",
+        "oec": "306446640",
+        "oei": "306446401",
+        "oect": "306431675"
+      }
     },
     "financeiro": {
-      "nome": "Agente Financeiro", 
+      "nome": "Agente Financeiro",
       "fontes": ["omie_upload", "d4sign"],
       "horario": "manual",
       "ativo": true
     }
   },
-  
+
   "cerebro": {
     "horario_processamento": "08:00",
-    "claude_model": "claude-sonnet-4-20250514",
-    "max_tokens": 4096
+    "motor_principal": "cerebro_regras.py",
+    "ai_opcional_ordem": ["github_models", "anthropic"],
+    "github_models_default": "gpt-4o-mini",
+    "anthropic_default": "claude-sonnet-4-20250514",
+    "max_tokens": 2048
   },
   
   "saidas": {

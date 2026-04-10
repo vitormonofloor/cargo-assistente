@@ -1,0 +1,73 @@
+{
+  "_descricao": "Thresholds para análise determinística do Cérebro. Ajuste livre — sem código.",
+  "_versao": "1.0.0",
+  "_atualizado": "2026-04-10",
+
+  "gargalos": {
+    "G1_amostras_coleta": {
+      "descricao": "Cards em 'Solicitar Coleta' no pipe OEC",
+      "pipe": "oec",
+      "fase_contem": ["solicitar coleta", "coleta"],
+      "critico": 50,
+      "alerta": 20,
+      "referencia": "Histórico: 267 cards (mar/2026) — 260 dias avg"
+    },
+    "G2_vt_afericao": {
+      "descricao": "Cards em 'Agend. VT Aferição' no pipe OE",
+      "pipe": "oe",
+      "fase_contem": ["agend. vt aferição", "vt aferição", "afericao"],
+      "critico": 30,
+      "alerta": 15,
+      "referencia": "Histórico: 41 cards — 163 dias avg — SLA 3% vs meta 90%"
+    },
+    "G3_aguardando_liberacao": {
+      "descricao": "Cards em 'Aguardando Liberação' no pipe OE",
+      "pipe": "oe",
+      "fase_contem": ["aguardando liberação", "aguardando liberacao"],
+      "critico": 20,
+      "alerta": 10,
+      "referencia": "Histórico: 28 cards — depende de G1"
+    },
+    "G4_obras_pausadas": {
+      "descricao": "Obras em fases de pausa no pipe OE",
+      "pipe": "oe",
+      "fase_contem": ["pausa", "pausada", "paused"],
+      "critico_pct": 0.30,
+      "alerta_pct": 0.15,
+      "referencia": "Taxa histórica: 47,6% - meta <20%"
+    }
+  },
+
+  "slas_pp001": {
+    "_descricao": "SLAs PP:001 calculados a partir da Data X (Início da Obra)",
+    "vt_afericao_dias_antes": 60,
+    "escolha_cor_dias_antes": 35,
+    "vt_entrada_dias_antes": 10,
+    "definir_equipe_dias_antes": 7,
+    "meta_aprovacao_pct": 0.90,
+    "ciclo_medio_meta_dias": 150,
+    "ciclo_medio_atual_dias": 238
+  },
+
+  "alertas": {
+    "enviar_se_criticos_eq_zero": false,
+    "horario_execucao": "08:00 BRT",
+    "dias_ativos": ["seg", "ter", "qua", "qui", "sex"],
+    "incluir_historico_comparativo": true
+  },
+
+  "ai_opcional": {
+    "_descricao": "AI só é chamada se disponível. Se não, regras puras geram o alerta.",
+    "usar_se_disponivel": true,
+    "provedores_prioridade": ["github_models", "anthropic"],
+    "github_models": {
+      "endpoint": "https://models.inference.ai.azure.com",
+      "modelo": "gpt-4o-mini",
+      "usa_github_token": true
+    },
+    "anthropic": {
+      "modelo": "claude-sonnet-4-20250514",
+      "max_tokens": 2048
+    }
+  }
+}
