@@ -44,8 +44,16 @@ PAGE_SIZE = 30
 MAX_RETRIES = 3
 RETRY_DELAY_S = 5
 # Custom field IDs do Pipefy (descobertos via introspecção — ajuste se necessário)
-FIELD_DATA_ENTRADA_CANDIDATOS = ['data_entrada', 'dataentrada', 'data_de_entrada', 'data_inicio_obra']
+FIELD_DATA_ENTRADA_CANDIDATOS = ['data_entrada', 'dataentrada', 'data_de_entrada', 'data_inicio_obra', 'data_inicio']
 FIELD_DATA_FIM_CANDIDATOS = ['data_fim', 'datafim', 'data_de_fim', 'data_termino', 'data_termino_obra']
+
+# Campos descritivos da obra (para segmentação)
+FIELD_M2_CANDIDATOS = ['m2', 'metragem', 'area', 'metros_quadrados', 'm__', 'metragem_total', 'area_total']
+FIELD_NOME_CANDIDATOS = ['nome_projeto', 'nome_da_obra', 'nome_obra', 'projeto', 'cliente']
+FIELD_ESTADO_CANDIDATOS = ['estado', 'uf', 'estado_uf', 'estado_da_obra']
+FIELD_CIDADE_CANDIDATOS = ['cidade', 'cidade_da_obra', 'municipio']
+FIELD_VALOR_CANDIDATOS = ['valor', 'valor_obra', 'valor_total', 'valor_contrato', 'valor_total_obra']
+FIELD_PRODUTO_CANDIDATOS = ['produto', 'tipo_de_piso', 'tipo_piso', 'tipo_obra']
 
 
 # ============================================================
@@ -219,8 +227,19 @@ def parse_br_datetime(s: str):
         return None
 
 
+def parse_float_safe(s: str):
+    """Converte string para float, lidando com formato BR (vírgula)."""
+    if not s:
+        return None
+    try:
+        s = str(s).replace('.', '').replace(',', '.') if ',' in str(s) else str(s)
+        return float(s)
+    except (ValueError, TypeError):
+        return None
+
+
 def calcular_metricas(card: dict) -> dict:
-    """Computa T0, T1, T2 e as diferenças em dias."""
+    """Computa T0, T1, T2 e as diferenças em dias + dados descritivos."""
     fields = card.get('fields', []) or []
     t0 = parse_iso_date(card.get('createdAt'))
     t1 = parse_br_datetime(extrair_custom_field(fields, FIELD_DATA_ENTRADA_CANDIDATOS))
@@ -232,6 +251,10 @@ def calcular_metricas(card: dict) -> dict:
             return round((b - a).total_seconds() / 86400, 1)
         return None
 
+    # Dados descritivos para segmentação
+    m2_raw = extrair_custom_field(fields, FIELD_M2_CANDIDATOS)
+    valor_raw = extrair_custom_field(fields, FIELD_VALOR_CANDIDATOS)
+
     return {
         't0_criacao': t0.isoformat() if t0 else None,
         't1_inicio_obra': t1.isoformat() if t1 else None,
@@ -241,11 +264,23 @@ def calcular_metricas(card: dict) -> dict:
         'dias_execucao': dias(t1, t2),         # T2 - T1
         'dias_total': dias(t0, t2),            # T2 - T0
         'dias_admin': dias(t0, tf),            # T0 → finished_at
+        # Descritivos da obra
+        'm2': parse_float_safe(m2_raw),
+        'valor': parse_float_safe(valor_raw),
+        'estado': extrair_custom_field(fields, FIELD_ESTADO_CANDIDATOS),
+        'cidade': extrair_custom_field(fields, FIELD_CIDADE_CANDIDATOS),
+        'produto': extrair_custom_field(fields, FIELD_PRODUTO_CANDIDATOS),
+        'nome_projeto': extrair_custom_field(fields, FIELD_NOME_CANDIDATOS),
     }
 
 
 def processar_phases_history(phases_history: list) -> list:
-    """Normaliza phases_history para JSON mais limpo."""
+    """
+    Normaliza phases_history para JSON mais limpo.
+    NOTA: Pipefy GraphQL retorna `duration` em SEGUNDOS, não em horas.
+    Calculamos duracao_dias diretamente de first_time_in/last_time_out
+    (mais confiável que o campo duration).
+    """
     if not phases_history:
         return []
     out = []
@@ -253,14 +288,22 @@ def processar_phases_history(phases_history: list) -> list:
         phase = p.get('phase', {}) or {}
         first_in = parse_iso_date(p.get('firstTimeIn'))
         last_out = parse_iso_date(p.get('lastTimeOut'))
-        duracao_h = p.get('duration')
+        duracao_segundos = p.get('duration')  # Pipefy retorna em segundos
+
+        # Calcula dias a partir dos timestamps (mais confiável)
+        duracao_dias = None
+        if first_in and last_out:
+            delta = (last_out - first_in).total_seconds()
+            if delta >= 0:
+                duracao_dias = round(delta / 86400, 1)
+
         out.append({
             'phase_id': phase.get('id'),
             'phase_name': phase.get('name'),
             'first_time_in': first_in.isoformat() if first_in else None,
             'last_time_out': last_out.isoformat() if last_out else None,
-            'duracao_horas': duracao_h,
-            'duracao_dias': round(duracao_h / 24, 1) if duracao_h else None,
+            'duracao_segundos': duracao_segundos,
+            'duracao_dias': duracao_dias,
         })
     return out
 
