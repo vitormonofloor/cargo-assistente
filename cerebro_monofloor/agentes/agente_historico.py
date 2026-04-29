@@ -43,17 +43,27 @@ OUTPUT_FILE = OUTPUT_DIR / 'pipefy_cards_full.json'
 PAGE_SIZE = 30
 MAX_RETRIES = 3
 RETRY_DELAY_S = 5
-# Custom field IDs do Pipefy (descobertos via introspecção — ajuste se necessário)
-FIELD_DATA_ENTRADA_CANDIDATOS = ['data_entrada', 'dataentrada', 'data_de_entrada', 'data_inicio_obra', 'data_inicio']
-FIELD_DATA_FIM_CANDIDATOS = ['data_fim', 'datafim', 'data_de_fim', 'data_termino', 'data_termino_obra']
+# Custom field IDs REAIS do Pipefy pipe OE (306410007), descobertos via introspecção em 2026-04-29.
+# Busca primária por internal_id; fallback por label só em casos de migração.
+FIELD_DATA_ENTRADA_IDS = ['414019097']  # "DATA DE ENTRADA" (due_date, start form)
+FIELD_DATA_FIM_IDS = ['414555158']      # "DATA DE FINALIZAÇÃO DA OBRA" (due_date)
 
-# Campos descritivos da obra (para segmentação)
-FIELD_M2_CANDIDATOS = ['m2', 'metragem', 'area', 'metros_quadrados', 'm__', 'metragem_total', 'area_total']
-FIELD_NOME_CANDIDATOS = ['nome_projeto', 'nome_da_obra', 'nome_obra', 'projeto', 'cliente']
-FIELD_ESTADO_CANDIDATOS = ['estado', 'uf', 'estado_uf', 'estado_da_obra']
-FIELD_CIDADE_CANDIDATOS = ['cidade', 'cidade_da_obra', 'municipio']
-FIELD_VALOR_CANDIDATOS = ['valor', 'valor_obra', 'valor_total', 'valor_contrato', 'valor_total_obra']
-FIELD_PRODUTO_CANDIDATOS = ['produto', 'tipo_de_piso', 'tipo_piso', 'tipo_obra']
+# Campos descritivos da obra (start form)
+FIELD_M2_IDS = ['413695047']                # "M² TOTAL" (number)
+FIELD_METRAGEM_LINEAR_IDS = ['418048464']   # "METRAGEM LINEAR TOTAL" (number)
+FIELD_NOME_IDS = ['413694916']              # "NOME DO PROJETO" (short_text)
+FIELD_ENDERECO_IDS = ['413750478']          # "ENDEREÇO" (long_text — contém cidade/UF embutidos)
+FIELD_EQUIPE_IDS = ['413741778']            # "EQUIPE DE EXECUÇÃO" (select)
+FIELD_VENDEDOR_IDS = ['414296816']          # "VENDEDOR" (short_text)
+FIELD_NUMERO_OS_IDS = ['414230468']         # "NÚMERO OS" (number)
+FIELD_PRAZO_IDS = ['414004890']             # "PRAZO" (number)
+FIELD_TELADA_IDS = ['414341397']            # "OBRA SERÁ TELADA?" (radio)
+FIELD_FASEADA_IDS = ['414846511']           # "OBRA SERÁ FASEADA?" (radio)
+FIELD_TIPO_OBRA_IDS = ['414467385', '414593182', '414592336']  # "TIPO DE OBRA" (radio, várias fases)
+FIELD_CORES_IDS = ['413736543']             # "COR(ES)" (checklist)
+FIELD_MATERIAL_IDS = ['414131848']          # "MATERIAL" (checklist)
+FIELD_DATA_PAUSAMENTO_IDS = ['414591351']   # "DATA DO PAUSAMENTO DA OBRA"
+FIELD_DATA_RETORNO_IDS = ['415359045']      # "DATA DO RETORNO"
 
 
 # ============================================================
@@ -174,18 +184,23 @@ def coletar_todos_cards() -> list:
 # EXTRAÇÃO DE CAMPOS CUSTOMIZADOS
 # ============================================================
 
-def extrair_custom_field(fields: list, candidatos: list) -> str:
-    """Busca valor de campo customizado por internal_id ou label."""
+def extrair_custom_field(fields: list, ids_alvo: list) -> str:
+    """Busca valor de campo customizado por internal_id (match exato).
+
+    `ids_alvo` é lista de internal_ids do Pipefy (strings numéricas como '413695047').
+    Match exato evita falsos positivos por substring (que era o bug anterior:
+    'metragem' batia em 'detalhamento_metragem_de_tela', retornando string em vez de m²).
+
+    Retorna native_value se disponível, senão value, senão ''.
+    """
+    if not fields or not ids_alvo:
+        return ''
+    ids_set = set(str(i) for i in ids_alvo)
     for f in fields:
         field_info = f.get('field', {}) or {}
-        internal = (field_info.get('internal_id') or '').lower()
-        label = (field_info.get('label') or '').lower()
-        name = (f.get('name') or '').lower()
-
-        for cand in candidatos:
-            c = cand.lower()
-            if c in (internal, label, name) or c in internal or c in label:
-                return f.get('native_value') or f.get('value') or ''
+        internal = str(field_info.get('internal_id') or '')
+        if internal in ids_set:
+            return f.get('native_value') or f.get('value') or ''
     return ''
 
 
@@ -238,22 +253,38 @@ def parse_float_safe(s: str):
         return None
 
 
+def parse_due_date(s: str):
+    """Parse formato 'due_date' do Pipefy. Pode vir como ISO ('2026-04-15') ou DD/MM/YYYY.
+
+    Tenta ambos. due_date sem hora retorna data UTC midnight.
+    """
+    if not s:
+        return None
+    s = str(s).strip()
+    # Tenta ISO primeiro (mais comum em native_value)
+    iso = parse_iso_date(s)
+    if iso:
+        return iso
+    # Fallback BR
+    return parse_br_datetime(s)
+
+
 def calcular_metricas(card: dict) -> dict:
-    """Computa T0, T1, T2 e as diferenças em dias + dados descritivos."""
+    """Computa T0, T1, T2 e as diferenças em dias + dados descritivos.
+
+    Pós-fix 2026-04-29: extrair_custom_field agora usa internal_id (match exato)
+    em vez de substring de label. Cobertura de m² esperada: ~73% (vs 40% anterior).
+    """
     fields = card.get('fields', []) or []
     t0 = parse_iso_date(card.get('createdAt'))
-    t1 = parse_br_datetime(extrair_custom_field(fields, FIELD_DATA_ENTRADA_CANDIDATOS))
-    t2 = parse_br_datetime(extrair_custom_field(fields, FIELD_DATA_FIM_CANDIDATOS))
+    t1 = parse_due_date(extrair_custom_field(fields, FIELD_DATA_ENTRADA_IDS))
+    t2 = parse_due_date(extrair_custom_field(fields, FIELD_DATA_FIM_IDS))
     tf = parse_iso_date(card.get('finished_at'))
 
     def dias(a, b):
         if a and b:
             return round((b - a).total_seconds() / 86400, 1)
         return None
-
-    # Dados descritivos para segmentação
-    m2_raw = extrair_custom_field(fields, FIELD_M2_CANDIDATOS)
-    valor_raw = extrair_custom_field(fields, FIELD_VALOR_CANDIDATOS)
 
     return {
         't0_criacao': t0.isoformat() if t0 else None,
@@ -264,13 +295,22 @@ def calcular_metricas(card: dict) -> dict:
         'dias_execucao': dias(t1, t2),         # T2 - T1
         'dias_total': dias(t0, t2),            # T2 - T0
         'dias_admin': dias(t0, tf),            # T0 → finished_at
-        # Descritivos da obra
-        'm2': parse_float_safe(m2_raw),
-        'valor': parse_float_safe(valor_raw),
-        'estado': extrair_custom_field(fields, FIELD_ESTADO_CANDIDATOS),
-        'cidade': extrair_custom_field(fields, FIELD_CIDADE_CANDIDATOS),
-        'produto': extrair_custom_field(fields, FIELD_PRODUTO_CANDIDATOS),
-        'nome_projeto': extrair_custom_field(fields, FIELD_NOME_CANDIDATOS),
+        # Descritivos da obra (start form do pipe OE)
+        'm2': parse_float_safe(extrair_custom_field(fields, FIELD_M2_IDS)),
+        'metragem_linear': parse_float_safe(extrair_custom_field(fields, FIELD_METRAGEM_LINEAR_IDS)),
+        'nome_projeto': extrair_custom_field(fields, FIELD_NOME_IDS),
+        'endereco': extrair_custom_field(fields, FIELD_ENDERECO_IDS),
+        'equipe_execucao': extrair_custom_field(fields, FIELD_EQUIPE_IDS),
+        'vendedor': extrair_custom_field(fields, FIELD_VENDEDOR_IDS),
+        'numero_os': extrair_custom_field(fields, FIELD_NUMERO_OS_IDS),
+        'prazo_dias': parse_float_safe(extrair_custom_field(fields, FIELD_PRAZO_IDS)),
+        'telada': extrair_custom_field(fields, FIELD_TELADA_IDS),
+        'faseada': extrair_custom_field(fields, FIELD_FASEADA_IDS),
+        'tipo_obra': extrair_custom_field(fields, FIELD_TIPO_OBRA_IDS),
+        'cores': extrair_custom_field(fields, FIELD_CORES_IDS),
+        'material': extrair_custom_field(fields, FIELD_MATERIAL_IDS),
+        'data_pausamento': extrair_custom_field(fields, FIELD_DATA_PAUSAMENTO_IDS),
+        'data_retorno': extrair_custom_field(fields, FIELD_DATA_RETORNO_IDS),
     }
 
 
